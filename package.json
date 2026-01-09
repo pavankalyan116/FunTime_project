@@ -2,16 +2,15 @@
   "name": "lyrics-karaoke-app",
   "type": "module",
   "scripts": {
-  "dev": "concurrently \"npm run server\" \"npm run client\"",
-  "server": "node server/index.js",
-  "client": "vite",
-  "build": "vite build",
-  "preview": "vite preview",
-  "start": "concurrently \"npm run server\" \"npm run client\"",
-
-  "predeploy": "npm run build",
-  "deploy": "gh-pages -d dist"
-},
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "node server/index.js",
+    "client": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "predeploy": "cross-env VITE_API_URL=https://funtime-project.onrender.com npm run build",
+    "deploy": "gh-pages -d dist"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -30,6 +29,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.2",
+    "cross-env": "^10.1.0",
     "gh-pages": "^6.3.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
