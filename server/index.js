@@ -24,15 +24,11 @@ if (MOCK_MODE) {
 ===================== */
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:5173",
-      "http://localhost:5174"
-    ],
-    credentials: true
+    origin: "*"
   })
 );
+
+app.use(express.json());
 
 /* =====================
    FILE UPLOAD SETUP
@@ -64,7 +60,7 @@ if (!MOCK_MODE) {
 /* =====================
    ROUTES
 ===================== */
-app.post("/chat", express.json(), async (req, res) => {
+app.post("/chat", async (req, res) => {
   const { messages, model = "llama-3.3-70b-versatile" } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: "Messages array is required" });
