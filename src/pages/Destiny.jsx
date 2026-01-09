@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Stars, Calculator, Send } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Destiny = () => {
   const [activeTab, setActiveTab] = useState('flames');
 
@@ -95,7 +97,7 @@ const FlamesGame = () => {
     // Generate AI dedication
     let dedication = "A match made in heaven!";
     try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch(`${API_URL}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -225,7 +227,7 @@ const AstrologyReader = () => {
       : `Give a relationship compatibility reading for ${p1} and ${p2}. Be witty and fun.`;
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

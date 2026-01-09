@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Brainlock = () => {
   const [topic, setTopic] = useState('');
   const [gameStatus, setGameStatus] = useState('idle'); // idle, loading, playing, finished
@@ -19,7 +21,7 @@ const Brainlock = () => {
     setCurrentQuestion(0);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
