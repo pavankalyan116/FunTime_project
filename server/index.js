@@ -24,11 +24,25 @@ if (MOCK_MODE) {
 ===================== */
 app.use(
   cors({
-    origin: "*"
+    origin: ["https://pavankalyan116.github.io", "*"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
   })
 );
 
 app.use(express.json());
+
+/* =====================
+   PREFLIGHT HANDLER
+===================== */
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', 'https://pavankalyan116.github.io');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.send(200);
+});
 
 /* =====================
    FILE UPLOAD SETUP
