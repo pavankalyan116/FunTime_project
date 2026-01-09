@@ -9,7 +9,7 @@ import Brainlock from './pages/Brainlock';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/FunTime_project">
       <div className="min-h-screen bg-gray-950 font-sans text-gray-100">
         <Navbar />
         <Routes>
