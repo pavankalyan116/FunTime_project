@@ -74,7 +74,7 @@ if (!MOCK_MODE) {
 /* =====================
    ROUTES
 ===================== */
-app.post("/chat", async (req, res) => {
+app.post("/api/chat", async (req, res) => {
   const { messages, model = "llama-3.3-70b-versatile" } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: "Messages array is required" });
@@ -139,7 +139,7 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-app.post("/transcribe", upload.single("audio"), async (req, res) => {
+app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No audio file uploaded" });
   }
