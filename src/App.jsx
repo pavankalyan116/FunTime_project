@@ -18,6 +18,9 @@ function App() {
           <Route path="/destiny" element={<Destiny />} />
           <Route path="/arcade" element={<Arcade />} />
           <Route path="/brainlock" element={<Brainlock />} />
+
+          {/* ✅ fallback route (IMPORTANT) */}
+          <Route path="*" element={<Home />} />
         </Routes>
       </div>
     </Router>
