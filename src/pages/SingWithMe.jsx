@@ -5,6 +5,8 @@ import UploadCard from '../components/UploadCard';
 import KaraokeLyrics from '../components/KaraokeLyrics';
 import AudioPlayer from '../components/AudioPlayer';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const SingWithMe = () => {
   const [audioFile, setAudioFile] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
@@ -35,7 +37,7 @@ const SingWithMe = () => {
     formData.append("audio", file);
 
     try {
-      const response = await fetch("/api/transcribe", {
+      const response = await fetch(`${API_URL}/api/transcribe`, {
         method: "POST",
         body: formData,
       });
