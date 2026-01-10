@@ -6,6 +6,8 @@ import SingWithMe from './pages/SingWithMe';
 import Destiny from './pages/Destiny';
 import Arcade from './pages/Arcade';
 import Brainlock from './pages/Brainlock';
+import GamePlayer from "./pages/GamePlayer";
+
 
 function App() {
   return (
@@ -18,7 +20,7 @@ function App() {
           <Route path="/destiny" element={<Destiny />} />
           <Route path="/arcade" element={<Arcade />} />
           <Route path="/brainlock" element={<Brainlock />} />
-
+          <Route path="/arcade/:gameId" element={<GamePlayer />} />
           {/* ✅ fallback route (IMPORTANT) */}
           <Route path="*" element={<Home />} />
         </Routes>
