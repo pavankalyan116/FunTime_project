@@ -10,7 +10,7 @@ const app = express();
 /* =====================
    CONFIG
 ===================== */
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5002;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 const MOCK_MODE = !GROQ_API_KEY;
@@ -24,7 +24,7 @@ if (MOCK_MODE) {
 ===================== */
 app.use(
   cors({
-    origin: ["https://pavankalyan116.github.io", "*"],
+    origin: ["https://pavankalyan116.github.io", "http://localhost:3000", "http://localhost:3001", "*"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
@@ -37,7 +37,10 @@ app.use(express.json());
    PREFLIGHT HANDLER
 ===================== */
 app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', 'https://pavankalyan116.github.io');
+  const origin = req.headers.origin;
+  if (origin === 'https://pavankalyan116.github.io' || origin === 'http://localhost:3000' || origin === 'http://localhost:3001') {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
