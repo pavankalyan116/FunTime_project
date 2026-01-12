@@ -8,7 +8,7 @@ const Destiny = () => {
   const [activeTab, setActiveTab] = useState('flames');
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-950 via-purple-900/20 to-gray-950 p-4 md:p-8 relative overflow-hidden">
+    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-950 via-purple-900/20 to-gray-950 p-3 sm:p-4 md:p-6 lg:p-8 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl animate-pulse"></div>
@@ -16,50 +16,50 @@ const Destiny = () => {
         <div className="absolute bottom-10 left-1/4 w-48 h-48 bg-yellow-500/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-4xl mx-auto relative z-10 px-2 sm:px-4">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
+          className="text-center mb-8 sm:mb-10"
         >
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent mb-3 sm:mb-4">
             Discover Your Destiny
           </h1>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-300 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto px-4">
             Unveil the mysteries of your future with ancient wisdom and cosmic guidance
           </p>
         </motion.div>
 
         {/* Tab Navigation */}
-        <div className="flex justify-center space-x-2 md:space-x-4 mb-8">
+        <div className="flex justify-center space-x-2 md:space-x-4 mb-6 sm:mb-8 px-2">
           <button
             onClick={() => setActiveTab('flames')}
-            className={`flex items-center px-4 md:px-6 py-3 rounded-full text-sm md:text-base font-semibold transition-all duration-300 transform hover:scale-105 ${
+            className={`flex items-center px-3 sm:px-4 md:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm md:text-base font-semibold transition-all duration-300 transform hover:scale-105 ${
               activeTab === 'flames'
                 ? 'bg-gradient-to-r from-pink-600 to-red-600 text-white shadow-lg shadow-pink-500/30 ring-2 ring-pink-500/20'
                 : 'bg-gray-800/80 text-gray-300 hover:bg-gray-700/80 border border-gray-700'
             }`}
           >
-            <Heart className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-            <span className="hidden md:inline">FLAMES</span>
-            <span className="md:hidden">❤️</span>
+            <Heart className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">FLAMES</span>
+            <span className="sm:hidden">❤️</span>
           </button>
           <button
             onClick={() => setActiveTab('astrology')}
-            className={`flex items-center px-4 md:px-6 py-3 rounded-full text-sm md:text-base font-semibold transition-all duration-300 transform hover:scale-105 ${
+            className={`flex items-center px-3 sm:px-4 md:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm md:text-base font-semibold transition-all duration-300 transform hover:scale-105 ${
               activeTab === 'astrology'
                 ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/30 ring-2 ring-purple-500/20'
                 : 'bg-gray-800/80 text-gray-300 hover:bg-gray-700/80 border border-gray-700'
             }`}
           >
-            <Stars className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-            <span className="hidden md:inline">Astrology</span>
-            <span className="md:hidden">⭐</span>
+            <Stars className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Astrology</span>
+            <span className="sm:hidden">⭐</span>
           </button>
         </div>
 
-        <div className="bg-gray-900/50 backdrop-blur-sm rounded-3xl p-6 md:p-10 border border-gray-800 shadow-2xl">
+        <div className="bg-gray-900/50 backdrop-blur-sm rounded-3xl p-4 sm:p-6 md:p-8 lg:p-10 border border-gray-800 shadow-2xl">
           <AnimatePresence mode="wait">
             {activeTab === 'flames' ? <FlamesGame key="flames" /> : <AstrologyReader key="astrology" />}
           </AnimatePresence>
@@ -153,29 +153,29 @@ const FlamesGame = () => {
       className="space-y-8 text-center"
     >
       {/* Title */}
-      <div className="mb-8">
-        <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-pink-500 to-red-500 bg-clip-text text-transparent mb-4">
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-pink-500 to-red-500 bg-clip-text text-transparent mb-3 sm:mb-4">
           ❤️ FLAMES Compatibility Calculator
         </h2>
-        <p className="text-gray-400 text-sm md:text-base max-w-md mx-auto">
+        <p className="text-gray-400 text-xs sm:text-sm md:text-base max-w-md mx-auto px-4">
           Discover your relationship destiny with the mystical FLAMES algorithm
         </p>
       </div>
       
       {/* Input Section */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="space-y-4"
+          className="space-y-3 sm:space-y-4"
         >
-          <label className="text-sm font-medium text-gray-300 mb-2 block">Your Name</label>
+          <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">Your Name</label>
           <input
             type="text"
             value={name1}
             onChange={(e) => setName1(e.target.value)}
-            className="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all text-center text-lg backdrop-blur-sm"
+            className="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all text-center text-base sm:text-lg backdrop-blur-sm"
             placeholder="Enter your name..."
           />
         </motion.div>
@@ -184,14 +184,14 @@ const FlamesGame = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="space-y-4"
+          className="space-y-3 sm:space-y-4"
         >
-          <label className="text-sm font-medium text-gray-300 mb-2 block">Partner's Name</label>
+          <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">Partner's Name</label>
           <input
             type="text"
             value={name2}
             onChange={(e) => setName2(e.target.value)}
-            className="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all text-center text-lg backdrop-blur-sm"
+            className="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all text-center text-base sm:text-lg backdrop-blur-sm"
             placeholder="Enter partner's name..."
           />
         </motion.div>
@@ -202,30 +202,30 @@ const FlamesGame = () => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3 }}
-        className="mb-8"
+        className="mb-6 sm:mb-8"
       >
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={calculateFlames}
           disabled={loading || !name1 || !name2}
-          className="px-8 py-4 bg-gradient-to-r from-pink-600 to-red-600 rounded-full font-bold text-lg shadow-lg shadow-pink-600/30 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-300"
+          className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-pink-600 to-red-600 rounded-full font-bold text-base sm:text-lg shadow-lg shadow-pink-600/30 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-300"
         >
           {loading ? (
-            <div className="flex items-center">
+            <div className="flex items-center justify-center">
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ repeat: Infinity, duration: 0.8 }}
                 className="mr-2"
               >
-                <Heart className="w-6 h-6 fill-current" />
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6 fill-current" />
               </motion.div>
-              <span>Calculating Destiny...</span>
+              <span className="text-sm sm:text-base">Calculating Destiny...</span>
             </div>
           ) : (
-            <div className="flex items-center">
-              <Sparkles className="w-5 h-5 mr-2" />
-              <span>Reveal Your Destiny</span>
+            <div className="flex items-center justify-center">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">Reveal Your Destiny</span>
             </div>
           )}
         </motion.button>
@@ -238,17 +238,17 @@ const FlamesGame = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className={`p-8 rounded-3xl bg-gradient-to-br ${result.color} text-white shadow-2xl backdrop-blur-sm border border-white/10`}
+            className={`p-6 sm:p-8 rounded-3xl bg-gradient-to-br ${result.color} text-white shadow-2xl backdrop-blur-sm border border-white/10`}
           >
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="text-5xl md:text-6xl font-black mb-4 text-center"
+              className="text-4xl sm:text-5xl md:text-6xl font-black mb-3 sm:mb-4 text-center"
             >
               {result.outcome}
             </motion.div>
             
-            <div className="w-full bg-white/10 rounded-full h-3 mb-4 overflow-hidden backdrop-blur-sm">
+            <div className="w-full bg-white/10 rounded-full h-2 sm:h-3 mb-3 sm:mb-4 overflow-hidden backdrop-blur-sm">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${result.percentage}%` }}
@@ -256,11 +256,11 @@ const FlamesGame = () => {
                 className="h-full bg-gradient-to-r from-white/50 to-white/80 rounded-full"
               />
             </div>
-            <p className="text-lg md:text-xl font-serif italic text-center mb-2">
+            <p className="text-base sm:text-lg md:text-xl font-serif italic text-center mb-2 px-2">
               "{result.dedication}"
             </p>
-            <div className="text-sm opacity-80 text-center">
-              <span className="inline-block px-3 py-1 bg-white/10 rounded-full">
+            <div className="text-xs sm:text-sm opacity-80 text-center">
+              <span className="inline-block px-2 sm:px-3 py-1 bg-white/10 rounded-full">
                 {result.percentage}% Compatibility
               </span>
             </div>
@@ -456,18 +456,18 @@ const AstrologyReader = () => {
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
+        className="text-center mb-6 sm:mb-8"
       >
-        <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent mb-4">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent mb-3 sm:mb-4">
           🕉️ Vedic Jyotish Consultation
         </h2>
-        <p className="text-gray-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+        <p className="text-gray-400 text-xs sm:text-sm md:text-base max-w-2xl mx-auto leading-relaxed px-4">
           Ancient wisdom of Bharatiya Jyotish Shastra • Cosmic guidance through Rashi, Nakshatra & Planetary influences
         </p>
-        <div className="flex justify-center space-x-4 mt-4 text-xs text-purple-300">
-          <span className="px-3 py-1 bg-purple-900/30 rounded-full">🌙 Chandra Rashi</span>
-          <span className="px-3 py-1 bg-purple-900/30 rounded-full">⭐ Janma Nakshatra</span>
-          <span className="px-3 py-1 bg-purple-900/30 rounded-full">🔮 Kundali Milan</span>
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-3 sm:mt-4 text-xs text-purple-300">
+          <span className="px-2 sm:px-3 py-1 bg-purple-900/30 rounded-full">🌙 Chandra Rashi</span>
+          <span className="px-2 sm:px-3 py-1 bg-purple-900/30 rounded-full">⭐ Janma Nakshatra</span>
+          <span className="px-2 sm:px-3 py-1 bg-purple-900/30 rounded-full">🔮 Kundali Milan</span>
         </div>
       </motion.div>
 
@@ -475,66 +475,68 @@ const AstrologyReader = () => {
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex justify-center mb-8"
+        className="flex justify-center mb-6 sm:mb-8 px-2"
       >
-        <div className="bg-gray-800/50 backdrop-blur-sm rounded-full p-2 border border-gray-700/50">
-          <div className="flex space-x-2">
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-full p-1 sm:p-2 border border-gray-700/50">
+          <div className="flex space-x-1 sm:space-x-2">
             <button
               onClick={() => setMode('single')}
-              className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`flex items-center px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 mode === 'single' 
                   ? 'bg-purple-600 text-white shadow-lg' 
                   : 'text-gray-300 hover:text-white'
               }`}
             >
-              <Moon className="w-4 h-4 mr-2" />
-              Vyakti Jyotish (Personal)
+              <Moon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Vyakti Jyotish (Personal)</span>
+              <span className="sm:hidden">Personal</span>
             </button>
             <button
               onClick={() => setMode('couple')}
-              className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`flex items-center px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 mode === 'couple' 
                   ? 'bg-purple-600 text-white shadow-lg' 
                   : 'text-gray-300 hover:text-white'
               }`}
             >
-              <Sun className="w-4 h-4 mr-2" />
-              Kundali Milan (Compatibility)
+              <Sun className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Kundali Milan (Compatibility)</span>
+              <span className="sm:hidden">Compatibility</span>
             </button>
           </div>
         </div>
       </motion.div>
 
       {/* Enhanced Input Forms with Vedic Elements */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Person 1 */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="space-y-4 p-6 bg-gradient-to-br from-purple-900/20 via-indigo-900/20 to-purple-900/20 backdrop-blur-sm rounded-2xl border border-purple-500/30"
+          className="space-y-3 sm:space-y-4 p-4 sm:p-6 bg-gradient-to-br from-purple-900/20 via-indigo-900/20 to-purple-900/20 backdrop-blur-sm rounded-2xl border border-purple-500/30"
         >
-          <h3 className="text-purple-300 font-semibold mb-4 flex items-center">
-            <Stars className="w-5 h-5 mr-2" />
+          <h3 className="text-purple-300 font-semibold mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
+            <Stars className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {mode === 'couple' ? 'प्रथम व्यक्ति (First Person)' : 'आपकी जानकारी (Your Details)'}
           </h3>
           
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">नाम (Name)</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">नाम (Name)</label>
               <input
                 type="text"
                 placeholder="Enter your name"
-                className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-4 py-3 focus:border-purple-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-base sm:text-lg backdrop-blur-sm"
                 value={data.name1}
                 onChange={e => setData({...data, name1: e.target.value})}
               />
             </div>
             
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">चन्द्र राशि (Chandra Rashi - Moon Sign)</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">चन्द्र राशि (Chandra Rashi - Moon Sign)</label>
               <select
-                className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-4 py-3 focus:border-purple-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                 value={data.rashi1}
                 onChange={e => setData({...data, rashi1: e.target.value})}
               >
@@ -548,9 +550,9 @@ const AstrologyReader = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">जन्म नक्षत्र (Janma Nakshatra - Birth Star)</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म नक्षत्र (Janma Nakshatra - Birth Star)</label>
               <select
-                className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-4 py-3 focus:border-purple-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                 value={data.nakshatra1}
                 onChange={e => setData({...data, nakshatra1: e.target.value})}
               >
@@ -563,22 +565,22 @@ const AstrologyReader = () => {
               </select>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">जन्म तिथि (Birth Date)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म तिथि (Birth Date)</label>
                 <input
                     type="date"
-                    className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-4 py-3 focus:border-purple-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                    className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-2 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                     value={data.dob1 || ''}
                     onChange={e => setData({...data, dob1: e.target.value})}
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">जन्म समय (Birth Time)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म समय (Birth Time)</label>
                 <input
                     type="time"
-                    className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-4 py-3 focus:border-purple-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                    className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-2 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                     value={data.time1 || ''}
                     onChange={e => setData({...data, time1: e.target.value})}
                 />
@@ -593,29 +595,29 @@ const AstrologyReader = () => {
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
              transition={{ delay: 0.2 }}
-             className="space-y-4 p-6 bg-gradient-to-br from-pink-900/20 via-rose-900/20 to-pink-900/20 backdrop-blur-sm rounded-2xl border border-pink-500/30"
+             className="space-y-3 sm:space-y-4 p-4 sm:p-6 bg-gradient-to-br from-pink-900/20 via-rose-900/20 to-pink-900/20 backdrop-blur-sm rounded-2xl border border-pink-500/30"
            >
-            <h3 className="text-pink-300 font-semibold mb-4 flex items-center">
-              <Heart className="w-5 h-5 mr-2" />
+            <h3 className="text-pink-300 font-semibold mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
+              <Heart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               द्वितीय व्यक्ति (Partner's Details)
             </h3>
             
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">साथी का नाम (Partner's Name)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">साथी का नाम (Partner's Name)</label>
                 <input
                   type="text"
                   placeholder="Enter partner's name"
-                  className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-4 py-3 focus:border-pink-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                  className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-base sm:text-lg backdrop-blur-sm"
                   value={data.name2}
                   onChange={e => setData({...data, name2: e.target.value})}
                 />
               </div>
               
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">चन्द्र राशि (Chandra Rashi)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">चन्द्र राशि (Chandra Rashi)</label>
                 <select
-                  className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-4 py-3 focus:border-pink-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                  className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                   value={data.rashi2}
                   onChange={e => setData({...data, rashi2: e.target.value})}
                 >
@@ -629,9 +631,9 @@ const AstrologyReader = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">जन्म नक्षत्र (Janma Nakshatra)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म नक्षत्र (Janma Nakshatra)</label>
                 <select
-                  className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-4 py-3 focus:border-pink-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                  className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                   value={data.nakshatra2}
                   onChange={e => setData({...data, nakshatra2: e.target.value})}
                 >
@@ -644,22 +646,22 @@ const AstrologyReader = () => {
                 </select>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-300 mb-2 block">जन्म तिथि (Birth Date)</label>
+                  <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म तिथि (Birth Date)</label>
                   <input
                       type="date"
-                      className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-4 py-3 focus:border-pink-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                      className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-2 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                       value={data.dob2 || ''}
                       onChange={e => setData({...data, dob2: e.target.value})}
                   />
                 </div>
                 
                 <div>
-                  <label className="text-sm font-medium text-gray-300 mb-2 block">जन्म समय (Birth Time)</label>
+                  <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म समय (Birth Time)</label>
                   <input
                       type="time"
-                      className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-4 py-3 focus:border-pink-400 focus:outline-none transition-all text-lg backdrop-blur-sm"
+                      className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-2 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                       value={data.time2 || ''}
                       onChange={e => setData({...data, time2: e.target.value})}
                   />
@@ -682,30 +684,30 @@ const AstrologyReader = () => {
           whileTap={{ scale: 0.95 }}
           onClick={getVedicReading}
           disabled={loading || !data.name1 || !data.rashi1}
-          className="px-8 py-4 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-full font-bold text-lg shadow-lg shadow-purple-600/30 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-300 border border-purple-400/30"
+          className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-full font-bold text-base sm:text-lg shadow-lg shadow-purple-600/30 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-300 border border-purple-400/30"
         >
           {loading ? (
-            <div className="flex items-center">
+            <div className="flex items-center justify-center">
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                className="mr-3"
+                className="mr-2 sm:mr-3"
               >
                 🕉️
               </motion.div>
-              <span>ज्योतिष परामर्श... (Consulting the Stars)</span>
+              <span className="text-sm sm:text-base">ज्योतिष परामर्श... (Consulting the Stars)</span>
             </div>
           ) : (
-            <div className="flex items-center">
-              <Sparkles className="w-5 h-5 mr-2" />
-              <span>{mode === 'single' ? 'भविष्य जानें (Know Your Destiny)' : 'मिलान करें (Check Compatibility)'}</span>
+            <div className="flex items-center justify-center">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">{mode === 'single' ? 'भविष्य जानें (Know Your Destiny)' : 'मिलान करें (Check Compatibility)'}</span>
             </div>
           )}
         </motion.button>
         
         {/* Validation message */}
         {(!data.name1 || !data.rashi1) && (
-          <p className="text-sm text-gray-400 mt-2">
+          <p className="text-xs sm:text-sm text-gray-400 mt-2 px-4">
             कृपया नाम और राशि भरें (Please fill name and rashi)
           </p>
         )}
@@ -718,42 +720,42 @@ const AstrologyReader = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="mt-8 p-8 bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-purple-900/40 rounded-3xl border border-purple-400/30 backdrop-blur-sm shadow-2xl"
+            className="mt-6 sm:mt-8 p-6 sm:p-8 bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-purple-900/40 rounded-3xl border border-purple-400/30 backdrop-blur-sm shadow-2xl"
           >
             {/* Vedic Header */}
             <motion.div
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ repeat: Infinity, duration: 4 }}
-              className="text-center mb-8"
+              className="text-center mb-6 sm:mb-8"
             >
-              <div className="text-6xl mb-4">🕉️</div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-600 bg-clip-text text-transparent mb-2">
+              <div className="text-4xl sm:text-5xl lg:text-6xl mb-3 sm:mb-4">🕉️</div>
+              <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-600 bg-clip-text text-transparent mb-2">
                 {mode === 'single' ? 'व्यक्तिगत ज्योतिष फल' : 'कुंडली मिलान फल'}
               </h3>
-              <p className="text-purple-300 text-sm">
+              <p className="text-purple-300 text-xs sm:text-sm">
                 {mode === 'single' ? 'Personal Astrological Reading' : 'Horoscope Compatibility Analysis'}
               </p>
             </motion.div>
             
             {/* Reading Content */}
             <div className="prose prose-lg prose-invert max-w-none">
-              <div className="text-purple-100 leading-relaxed whitespace-pre-wrap text-lg">
+              <div className="text-purple-100 leading-relaxed whitespace-pre-wrap text-sm sm:text-base lg:text-lg">
                 {reading}
               </div>
             </div>
             
             {/* Vedic Footer */}
-            <div className="mt-8 pt-6 border-t border-purple-400/20 text-center">
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-purple-400/20 text-center">
               <motion.div
                 animate={{ scale: [1, 1.02, 1] }}
                 transition={{ repeat: Infinity, duration: 3 }}
-                className="inline-flex items-center space-x-4 px-6 py-3 bg-purple-600/20 rounded-full text-sm font-medium text-purple-200"
+                className="inline-flex items-center space-x-2 sm:space-x-4 px-4 sm:px-6 py-2 sm:py-3 bg-purple-600/20 rounded-full text-xs sm:text-sm font-medium text-purple-200"
               >
                 <span>🌟</span>
                 <span>सर्वे भवन्तु सुखिनः (May All Be Happy)</span>
                 <span>🌟</span>
               </motion.div>
-              <p className="text-xs text-purple-400 mt-3">
+              <p className="text-xs text-purple-400 mt-2 sm:mt-3 px-4">
                 Based on ancient Vedic Jyotish principles • For entertainment and guidance purposes
               </p>
             </div>

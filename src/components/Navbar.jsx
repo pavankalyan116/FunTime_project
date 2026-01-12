@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Mic2, Flame, Rocket, Zap, Sparkles, Palette, Laugh, Menu, X } from 'lucide-react';
 

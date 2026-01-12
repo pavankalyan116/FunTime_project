@@ -224,7 +224,7 @@ const SingWithMe = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-950 via-blue-950/20 to-gray-950 p-4 md:p-8 text-white relative overflow-hidden">
+    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-950 via-blue-950/20 to-gray-950 p-3 sm:p-4 md:p-6 lg:p-8 text-white relative overflow-hidden">
       {/* Enhanced Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div 
@@ -253,29 +253,29 @@ const SingWithMe = () => {
         />
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="max-w-6xl mx-auto relative z-10 px-2 sm:px-4">
         {/* Enhanced Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-10 lg:mb-12"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-blue-900/40 via-purple-900/40 to-pink-900/40 border border-blue-500/30 backdrop-blur-sm mb-6"
+            className="inline-flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-gradient-to-r from-blue-900/40 via-purple-900/40 to-pink-900/40 border border-blue-500/30 backdrop-blur-sm mb-4 sm:mb-6"
           >
-            <Music className="w-6 h-6 text-blue-400" />
-            <span className="text-sm font-semibold text-blue-200">AI-Powered Karaoke Studio</span>
-            <Sparkles className="w-5 h-5 text-yellow-400" />
+            <Music className="w-4 h-4 sm:w-5 md:w-6 lg:h-6 text-blue-400" />
+            <span className="text-xs sm:text-sm font-semibold text-blue-200">AI-Powered Karaoke Studio</span>
+            <Sparkles className="w-4 h-4 sm:w-5 md:h-5 text-yellow-400" />
           </motion.div>
 
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-5xl md:text-6xl font-black bg-gradient-to-r from-blue-400 via-purple-500 to-pink-600 bg-clip-text text-transparent mb-4"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r from-blue-400 via-purple-500 to-pink-600 bg-clip-text text-transparent mb-3 sm:mb-4"
           >
             SingWith Me
           </motion.h1>
@@ -283,7 +283,7 @@ const SingWithMe = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed"
+            className="text-gray-400 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed px-4"
           >
             Upload your favorite songs, get AI-generated lyrics, and record your performances with real-time feedback.
           </motion.p>
@@ -294,19 +294,19 @@ const SingWithMe = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="flex justify-center space-x-6 mt-6 text-sm"
+              className="flex flex-wrap justify-center gap-3 sm:gap-4 lg:gap-6 mt-4 sm:mt-6 text-xs sm:text-sm"
             >
-              <div className="flex items-center gap-2 px-4 py-2 bg-blue-800/30 rounded-full border border-blue-500/30">
-                <Music className="w-4 h-4 text-blue-400" />
+              <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-800/30 rounded-full border border-blue-500/30">
+                <Music className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400" />
                 <span className="text-blue-200">{sessionStats.songsUploaded} Songs</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-purple-800/30 rounded-full border border-purple-500/30">
-                <Mic className="w-4 h-4 text-purple-400" />
+              <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-800/30 rounded-full border border-purple-500/30">
+                <Mic className="w-3 h-3 sm:w-4 sm:h-4 text-purple-400" />
                 <span className="text-purple-200">{sessionStats.recordingsMade} Recordings</span>
               </div>
               {sessionStats.totalSingTime > 0 && (
-                <div className="flex items-center gap-2 px-4 py-2 bg-pink-800/30 rounded-full border border-pink-500/30">
-                  <Trophy className="w-4 h-4 text-pink-400" />
+                <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-pink-800/30 rounded-full border border-pink-500/30">
+                  <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-pink-400" />
                   <span className="text-pink-200">{formatDuration(sessionStats.totalSingTime)} Sung</span>
                 </div>
               )}
@@ -329,19 +329,19 @@ const SingWithMe = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-8 bg-gradient-to-r from-blue-900/40 to-purple-900/40 p-6 rounded-2xl border border-blue-500/30 backdrop-blur-sm"
+                className="mt-6 sm:mt-8 bg-gradient-to-r from-blue-900/40 to-purple-900/40 p-4 sm:p-6 rounded-2xl border border-blue-500/30 backdrop-blur-sm"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                     >
-                      <Radio className="w-6 h-6 text-blue-400" />
+                      <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
                     </motion.div>
-                    <span className="text-lg font-semibold text-white">Processing Audio</span>
+                    <span className="text-base sm:text-lg font-semibold text-white">Processing Audio</span>
                   </div>
-                  <span className="text-blue-300 font-mono">{Math.round(processingProgress)}%</span>
+                  <span className="text-blue-300 font-mono text-sm sm:text-base">{Math.round(processingProgress)}%</span>
                 </div>
                 
                 <div className="w-full bg-gray-800/50 rounded-full h-3 overflow-hidden">
@@ -359,7 +359,7 @@ const SingWithMe = () => {
                   </motion.div>
                 </div>
                 
-                <p className="text-gray-400 text-sm mt-3 text-center">
+                <p className="text-gray-400 text-xs sm:text-sm mt-2 sm:mt-3 text-center">
                   AI is analyzing your audio and generating synchronized lyrics...
                 </p>
               </motion.div>
@@ -370,12 +370,12 @@ const SingWithMe = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-8"
+            className="space-y-6 sm:space-y-8"
           >
             {/* Enhanced Control Bar */}
             <motion.div 
               variants={itemVariants}
-              className="flex flex-wrap justify-between items-center bg-gradient-to-r from-gray-900/80 to-gray-800/80 p-6 rounded-2xl border border-gray-700/50 backdrop-blur-sm"
+              className="flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 bg-gradient-to-r from-gray-900/80 to-gray-800/80 p-4 sm:p-6 rounded-2xl border border-gray-700/50 backdrop-blur-sm"
             >
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -389,9 +389,9 @@ const SingWithMe = () => {
                   setAiFeedback(null);
                   setPerformanceScore(null);
                 }}
-                className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+                className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors text-sm sm:text-base"
               >
-                <RotateCcw className="w-5 h-5" />
+                <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Upload New Song</span>
               </motion.button>
                
@@ -399,28 +399,28 @@ const SingWithMe = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setKaraokeMode(!karaokeMode)}
-                className={`flex items-center space-x-3 px-6 py-3 rounded-full transition-all duration-300 ${
+                className={`flex items-center space-x-2 sm:space-x-3 px-4 sm:px-6 py-2 sm:py-3 rounded-full transition-all duration-300 text-sm sm:text-base ${
                   karaokeMode 
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30' 
                     : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 border border-gray-600'
                 }`}
                 title="Simulates vocal removal for karaoke experience"
               >
-                {karaokeMode ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                {karaokeMode ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" /> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />}
                 <span className="font-semibold">
                   {karaokeMode ? 'Karaoke Mode ON' : 'Original Audio'}
                 </span>
-                {karaokeMode && <Zap className="w-4 h-4 text-yellow-300" />}
+                {karaokeMode && <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-300" />}
               </motion.button>
             </motion.div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
+            <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
               {/* Left Column - Controls */}
-              <motion.div variants={itemVariants} className="space-y-8">
+              <motion.div variants={itemVariants} className="space-y-6 sm:space-y-8">
                 {/* Enhanced Audio Player */}
-                <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 p-6 rounded-2xl border border-gray-700/50 backdrop-blur-sm">
-                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <Play className="w-5 h-5 text-blue-400" />
+                <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 p-4 sm:p-6 rounded-2xl border border-gray-700/50 backdrop-blur-sm">
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
+                    <Play className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                     Audio Player
                   </h3>
                   <AudioPlayer 
@@ -432,7 +432,7 @@ const SingWithMe = () => {
                 </div>
 
                 {/* Enhanced Recording Studio */}
-                <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 p-6 rounded-2xl border border-gray-700/50 backdrop-blur-sm relative overflow-hidden">
+                <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 p-4 sm:p-6 rounded-2xl border border-gray-700/50 backdrop-blur-sm relative overflow-hidden">
                   {isRecording && (
                     <motion.div 
                       animate={{ opacity: [0.5, 1, 0.5] }}
@@ -441,20 +441,20 @@ const SingWithMe = () => {
                     />
                   )}
                   
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <Mic className="w-5 h-5 text-red-400" />
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 flex items-center gap-2">
+                    <Mic className="w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
                     Recording Studio
                   </h3>
                   
-                  <div className="flex flex-col items-center space-y-6">
+                  <div className="flex flex-col items-center space-y-4 sm:space-y-6">
                     {!isRecording ? (
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={startRecording}
-                        className="relative w-20 h-20 rounded-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 flex items-center justify-center shadow-2xl shadow-red-500/40 transition-all group"
+                        className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 flex items-center justify-center shadow-2xl shadow-red-500/40 transition-all group"
                       >
-                        <Mic className="w-10 h-10 text-white group-hover:scale-110 transition-transform" />
+                        <Mic className="w-8 h-8 sm:w-10 sm:h-10 text-white group-hover:scale-110 transition-transform" />
                         <motion.div
                           animate={{ scale: [1, 1.2, 1] }}
                           transition={{ duration: 2, repeat: Infinity }}
@@ -462,25 +462,25 @@ const SingWithMe = () => {
                         />
                       </motion.button>
                     ) : (
-                      <div className="flex flex-col items-center space-y-4">
+                      <div className="flex flex-col items-center space-y-3 sm:space-y-4">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={stopRecording}
-                          className="w-20 h-20 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center border-4 border-red-500 shadow-2xl shadow-red-500/40 transition-all"
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center border-4 border-red-500 shadow-2xl shadow-red-500/40 transition-all"
                         >
-                          <Square className="w-8 h-8 text-white" />
+                          <Square className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </motion.button>
                         
                         <div className="text-center">
                           <motion.div
                             animate={{ scale: [1, 1.1, 1] }}
                             transition={{ duration: 1, repeat: Infinity }}
-                            className="text-red-400 font-mono text-lg font-bold mb-1"
+                            className="text-red-400 font-mono text-base sm:text-lg font-bold mb-1"
                           >
                             {formatDuration(recordingDuration)}
                           </motion.div>
-                          <div className="flex items-center gap-2 text-red-400 text-sm">
+                          <div className="flex items-center gap-2 text-red-400 text-xs sm:text-sm">
                             <motion.div
                               animate={{ opacity: [0, 1, 0] }}
                               transition={{ duration: 1, repeat: Infinity }}
@@ -496,21 +496,21 @@ const SingWithMe = () => {
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="w-full pt-6 border-t border-gray-700/50"
+                        className="w-full pt-4 sm:pt-6 border-t border-gray-700/50"
                       >
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0 mb-3 sm:mb-4">
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                            <span className="text-green-400 font-semibold">Recording Complete!</span>
+                            <span className="text-green-400 font-semibold text-sm sm:text-base">Recording Complete!</span>
                           </div>
                           <motion.a
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             href={recordingUrl}
                             download={`singwithme-recording-${Date.now()}.webm`}
-                            className="flex items-center space-x-2 text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-4 py-2 rounded-lg transition-all shadow-lg"
+                            className="flex items-center space-x-2 text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-3 sm:px-4 py-2 rounded-lg transition-all shadow-lg"
                           >
-                            <Download className="w-4 h-4" />
+                            <Download className="w-3 h-3 sm:w-4 sm:h-4" />
                             <span>Download</span>
                           </motion.a>
                         </div>
@@ -534,23 +534,23 @@ const SingWithMe = () => {
                   initial={{ opacity: 0, y: 30, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -30, scale: 0.95 }}
-                  className="bg-gradient-to-br from-yellow-900/40 via-orange-900/40 to-red-900/40 border border-yellow-500/30 p-8 rounded-3xl backdrop-blur-sm shadow-2xl"
+                  className="bg-gradient-to-br from-yellow-900/40 via-orange-900/40 to-red-900/40 border border-yellow-500/30 p-6 sm:p-8 rounded-3xl backdrop-blur-sm shadow-2xl"
                 >
                   {isAnalyzing ? (
                     <div className="text-center">
                       <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="inline-block mb-4"
+                        className="inline-block mb-3 sm:mb-4"
                       >
-                        <Sparkles className="w-12 h-12 text-yellow-400" />
+                        <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-400" />
                       </motion.div>
-                      <h3 className="text-2xl font-bold text-yellow-300 mb-2">AI Analyzing Performance</h3>
-                      <p className="text-gray-300">Evaluating pitch, timing, and vocal quality...</p>
+                      <h3 className="text-xl sm:text-2xl font-bold text-yellow-300 mb-2">AI Analyzing Performance</h3>
+                      <p className="text-gray-300 text-sm sm:text-base">Evaluating pitch, timing, and vocal quality...</p>
                       <motion.div
                         animate={{ width: ['0%', '100%'] }}
                         transition={{ duration: 3, ease: "easeInOut" }}
-                        className="w-full bg-gray-800/50 rounded-full h-2 mt-4 overflow-hidden"
+                        className="w-full bg-gray-800/50 rounded-full h-2 mt-3 sm:mt-4 overflow-hidden"
                       >
                         <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500" />
                       </motion.div>
@@ -560,23 +560,23 @@ const SingWithMe = () => {
                       <motion.div
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
-                        className="flex justify-center mb-4"
+                        className="flex justify-center mb-3 sm:mb-4"
                       >
                         {performanceScore?.score >= 90 ? (
-                          <Trophy className="w-12 h-12 text-yellow-400" />
+                          <Trophy className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-400" />
                         ) : performanceScore?.score >= 80 ? (
-                          <Star className="w-12 h-12 text-blue-400" />
+                          <Star className="w-10 h-10 sm:w-12 sm:h-12 text-blue-400" />
                         ) : (
-                          <Sparkles className="w-12 h-12 text-purple-400" />
+                          <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-purple-400" />
                         )}
                       </motion.div>
                       
-                      <h3 className="text-2xl font-bold text-yellow-300 mb-2">AI Performance Review</h3>
+                      <h3 className="text-xl sm:text-2xl font-bold text-yellow-300 mb-2">AI Performance Review</h3>
                       
                       {performanceScore && (
-                        <div className="mb-4">
-                          <div className="text-4xl font-black text-white mb-2">{performanceScore.score}/100</div>
-                          <div className={`inline-block px-4 py-2 rounded-full text-sm font-bold ${
+                        <div className="mb-3 sm:mb-4">
+                          <div className="text-3xl sm:text-4xl font-black text-white mb-2">{performanceScore.score}/100</div>
+                          <div className={`inline-block px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-bold ${
                             performanceScore.score >= 90 ? 'bg-yellow-500/20 text-yellow-300' :
                             performanceScore.score >= 80 ? 'bg-blue-500/20 text-blue-300' :
                             performanceScore.score >= 70 ? 'bg-green-500/20 text-green-300' :
@@ -587,7 +587,7 @@ const SingWithMe = () => {
                         </div>
                       )}
                       
-                      <p className="text-xl text-white italic leading-relaxed">"{aiFeedback}"</p>
+                      <p className="text-lg sm:text-xl text-white italic leading-relaxed px-2">"{aiFeedback}"</p>
                     </div>
                   )}
                 </motion.div>
