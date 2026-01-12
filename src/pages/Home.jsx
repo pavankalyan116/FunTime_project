@@ -43,7 +43,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white p-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white p-4 sm:p-6 lg:p-8">
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -56,7 +56,7 @@ const Home = () => {
           <motion.h1 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-7xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent leading-tight"
+            className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent leading-tight"
           >
             Welcome to FunTime
           </motion.h1>
@@ -64,7 +64,7 @@ const Home = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+            className="text-base sm:text-lg lg:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
           >
             Kill time, have fun, and explore new activities. Whether you're at home, office, or traveling, we've got something for you. No login required!
           </motion.p>
@@ -74,27 +74,27 @@ const Home = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="flex justify-center space-x-4 mt-8"
+            className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-6 sm:mt-8"
           >
-            <div className="bg-gray-800 px-4 py-2 rounded-full text-sm text-gray-300 border border-gray-700">
+            <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
               🎮 8+ Games
             </div>
-            <div className="bg-gray-800 px-4 py-2 rounded-full text-sm text-gray-300 border border-gray-700">
+            <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
               🎤 Karaoke Studio
             </div>
-            <div className="bg-gray-800 px-4 py-2 rounded-full text-sm text-gray-300 border border-gray-700">
+            <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
               🔮 AI Quizzes
             </div>
-            <div className="bg-gray-800 px-4 py-2 rounded-full text-sm text-gray-300 border border-gray-700">
+            <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
               😂 AI Jokes
             </div>
-            <div className="bg-gray-800 px-4 py-2 rounded-full text-sm text-gray-300 border border-gray-700">
+            <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
               ✨ No Login
             </div>
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-10">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
@@ -104,15 +104,15 @@ const Home = () => {
               whileHover={{ y: -5 }}
             >
               <Link to={feature.path}>
-                <div className={`h-full p-8 rounded-2xl bg-gradient-to-br ${feature.color} hover:scale-105 transition-all duration-300 shadow-2xl cursor-pointer group relative overflow-hidden`}>
+                <div className={`h-full p-5 sm:p-6 lg:p-8 rounded-2xl bg-gradient-to-br ${feature.color} hover:scale-105 transition-all duration-300 shadow-2xl cursor-pointer group relative overflow-hidden`}>
                   {/* Background Pattern */}
                   <div className="absolute inset-0 bg-white/10 transform rotate-45 translate-x-1/2 translate-y-1/2 w-32 h-32"></div>
                   
                   <div className="relative z-10">
-                    <feature.icon className="w-12 h-12 mb-4 text-white group-hover:rotate-12 transition-transform duration-300 drop-shadow-lg" />
-                    <h2 className="text-3xl font-bold mb-2">{feature.title}</h2>
-                    <p className="text-white/90 text-lg">{feature.description}</p>
-                    
+                    <feature.icon className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mb-3 sm:mb-4 text-white group-hover:rotate-12 transition-transform duration-300 drop-shadow-lg" />
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">{feature.title}</h2>
+                    <p className="text-white/90 text-sm sm:text-base lg:text-lg">{feature.description}</p>
+                  
                     {/* Hover indicator */}
                     <div className="mt-4 text-white/80 text-sm font-medium flex items-center">
                       Explore 

@@ -10,34 +10,29 @@ const Arcade = () => {
     { id: 'snake', name: 'Snake', description: 'Eat apples, grow long, don\'t crash', color: 'from-green-500 to-emerald-500' },
     { id: 'rps', name: 'Rock Paper Scissors', description: 'Beat the computer in this classic hand game', color: 'from-orange-500 to-red-500' },
     { id: 'reaction', name: 'Reaction Test', description: 'Test your reflexes against the computer', color: 'from-purple-500 to-indigo-500' },
-    { id: 'memory', name: 'Memory Match', description: 'Match pairs of cards to win', color: 'from-pink-500 to-rose-500' },
-    { id: 'breakout', name: 'Breakout', description: 'Break all the bricks with your paddle', color: 'from-yellow-500 to-amber-500' },
-    { id: 'wordguess', name: 'Word Guess', description: 'Guess the hidden word letter by letter', color: 'from-teal-500 to-cyan-500' },
     { id: 'numberpuzzle', name: 'Number Puzzle', description: 'Slide tiles to arrange numbers in order', color: 'from-indigo-500 to-purple-500' },
-
-    // 🎮 Phaser Game
     { id: 'space-shooter', name: 'Space Shooter', description: 'Arcade shooter powered by Phaser', color: 'from-pink-500 to-rose-500' }
   ];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gray-950 p-4 md:p-8">
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-950 p-4 sm:p-6 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-green-400 to-emerald-600 bg-clip-text text-transparent text-center">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 bg-gradient-to-r from-green-400 to-emerald-600 bg-clip-text text-transparent text-center">
           Arcade Zone
         </h1>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {games.map((game) => (
             <motion.div
               key={game.id}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveGame(game.id)}
-              className={`p-6 rounded-2xl bg-gradient-to-br ${game.color} cursor-pointer shadow-xl min-h-[200px] flex flex-col justify-between`}
+              className={`p-5 sm:p-6 rounded-2xl bg-gradient-to-br ${game.color} cursor-pointer shadow-xl min-h-[160px] sm:min-h-[200px] flex flex-col justify-between`}
             >
               <div>
-                <Gamepad2 className="w-10 h-10 text-white mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">{game.name}</h2>
+                <Gamepad2 className="w-8 h-8 sm:w-10 sm:h-10 text-white mb-3 sm:mb-4" />
+                <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">{game.name}</h2>
               </div>
               <p className="text-white/90 text-sm">{game.description}</p>
             </motion.div>
@@ -71,9 +66,6 @@ const Arcade = () => {
                 {activeGame === 'snake' && <SnakeGame />}
                 {activeGame === 'rps' && <RockPaperScissors />}
                 {activeGame === 'reaction' && <ReactionTest />}
-                {activeGame === 'memory' && <MemoryMatch />}
-                {activeGame === 'breakout' && <BreakoutGame />}
-                {activeGame === 'wordguess' && <WordGuessGame />}
                 {activeGame === 'numberpuzzle' && <NumberPuzzleGame />}
                 {activeGame === 'space-shooter' && <SpaceShooterGame />}
               </motion.div>
@@ -578,180 +570,49 @@ const TicTacToe = () => {
   );
 };
 
-// 🔹 Memory Match
-const MemoryMatch = () => {
-  const [cards, setCards] = useState([]);
-  const [flippedCards, setFlippedCards] = useState([]);
-  const [matchedPairs, setMatchedPairs] = useState(0);
-  const [moves, setMoves] = useState(0);
-  const [gameComplete, setGameComplete] = useState(false);
-
-  const symbols = ['🎮', '🎯', '🎨', '🎵', '🎭', '🎪', '🎸', '🎺'];
-
-  const initializeGame = () => {
-    const gameCards = [...symbols, ...symbols].map((symbol, index) => ({
-      id: index,
-      symbol,
-      isFlipped: false,
-      isMatched: false
-    }));
-    
-    setCards(gameCards.sort(() => Math.random() - 0.5));
-    setFlippedCards([]);
-    setMatchedPairs(0);
-    setMoves(0);
-    setGameComplete(false);
-  };
-
-  const flipCard = (index) => {
-    if (flippedCards.length === 2 || flippedCards.includes(index)) return;
-    
-    const newFlipped = [...flippedCards, index];
-    setFlippedCards(newFlipped);
-    
-    const newCards = cards.map(card => 
-      card.id === index ? { ...card, isFlipped: true } : card
-    );
-    setCards(newCards);
-    
-    // Check for match
-    const flippedCardObjects = newCards.filter(card => card.isFlipped && !card.isMatched);
-    if (flippedCardObjects.length === 2) {
-      setMoves(prev => prev + 1);
-      const [card1, card2] = flippedCardObjects;
-      if (card1.symbol === card2.symbol) {
-        const matchedCards = newCards.map(card =>
-          card.id === card1.id || card.id === card2.id
-            ? { ...card, isMatched: true }
-            : card
-        );
-        setCards(matchedCards);
-        setFlippedCards([]);
-        setMatchedPairs(prev => prev + 1);
-        
-        // Check for game complete
-        if (matchedPairs + 1 === symbols.length) {
-          setTimeout(() => {
-            setGameComplete(true);
-          }, 1000);
-        }
-      } else {
-        // Flip back after delay
-        setTimeout(() => {
-          setCards(prev => prev.map(card =>
-            card.id === card1.id || card.id === card2.id
-              ? { ...card, isFlipped: false }
-              : card
-          ));
-          setFlippedCards([]);
-        }, 1000);
-      }
-    }
-  };
-
-  return (
-    <div className="text-center space-y-6 p-6">
-      <h2 className="text-3xl font-bold text-pink-500 mb-4">Memory Match</h2>
-      
-      {!cards.length ? (
-        <div className="space-y-6">
-          <div className="bg-gray-800 p-6 rounded-lg max-w-2xl mx-auto">
-            <h3 className="text-xl font-bold text-white mb-4">How to Play:</h3>
-            <div className="text-gray-300 space-y-2 text-left">
-              <p>🧠 <strong>Goal:</strong> Find all matching pairs of cards</p>
-              <p>👆 <strong>How:</strong> Click cards to flip them over</p>
-              <p>🎯 <strong>Matching:</strong> Find two cards with the same symbol</p>
-              <p>⏱️ <strong>Memory:</strong> Remember card positions to match them faster</p>
-              <p>🏆 <strong>Win:</strong> Match all 8 pairs to complete the game</p>
-            </div>
-          </div>
-          
-          <button
-            onClick={initializeGame}
-            className="px-8 py-4 bg-pink-600 rounded-full font-bold text-white hover:bg-pink-700 transform hover:scale-105 transition-all"
-          >
-            Start Game
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="mb-4 text-lg text-gray-300">
-            Moves: <span className="font-bold text-white">{moves}</span> | 
-            Matches: <span className="font-bold text-green-400">{matchedPairs}/8</span>
-          </div>
-          
-          <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
-            {cards.map((card, index) => (
-              <button
-                key={card.id}
-                onClick={() => flipCard(index)}
-                disabled={card.isFlipped || card.isMatched}
-                className={`w-20 h-20 text-3xl rounded-lg transition-all duration-300 transform hover:scale-105 ${
-                  card.isFlipped || card.isMatched
-                    ? card.isMatched
-                      ? 'bg-green-500 text-white border-2 border-green-400 scale-95'
-                      : 'bg-white text-gray-900 border-2 border-gray-300'
-                    : 'bg-gray-800 text-white border-2 border-gray-600 hover:bg-gray-700'
-                }`}
-              >
-                {card.isFlipped || card.isMatched ? card.symbol : '?'}
-              </button>
-            ))}
-          </div>
-          
-          {gameComplete && (
-            <div className="mt-6 text-center space-y-4">
-              <h3 className="text-2xl font-bold text-green-400">🎉 Complete!</h3>
-              <p className="text-gray-300">You won in {moves} moves!</p>
-              <div className="text-sm text-gray-400">
-                {moves <= 16 && '⭐ Perfect memory!'}
-                {moves > 16 && moves <= 24 && '👍 Great job!'}
-                {moves > 24 && '💪 Good effort!'}
-              </div>
-              <button
-                onClick={initializeGame}
-                className="px-6 py-3 bg-pink-600 rounded-full font-bold text-white hover:bg-pink-700"
-              >
-                Play Again
-              </button>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-};
-
 // 🔹 Breakout Game
 const BreakoutGame = () => {
-  const [ball, setBall] = useState({ x: 400, y: 500, vx: 0, vy: 0 });
-  const [paddle, setPaddle] = useState({ x: 350, y: 550 });
+  const [ball, setBall] = useState({ x: 200, y: 250, vx: 0, vy: 0 });
+  const [paddle, setPaddle] = useState({ x: 175, y: 275 });
   const [bricks, setBricks] = useState([]);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameArea, setGameArea] = useState({ width: 400, height: 200 });
 
   const initializeGame = () => {
     const newBricks = [];
     for (let row = 0; row < 5; row++) {
       for (let col = 0; col < 8; col++) {
         newBricks.push({
-          x: col * 75 + 50,
-          y: row * 25 + 50,
-          width: 70,
-          height: 20,
+          x: col * 37 + 25,
+          y: row * 12 + 25,
+          width: 35,
+          height: 10,
           hits: 1,
           color: `hsl(${(row * 60 + col * 30)}, 70%, 50%)`
         });
       }
     }
     setBricks(newBricks);
-    setBall({ x: 400, y: 500, vx: 0, vy: 0 });
-    setPaddle({ x: 350, y: 550 });
+    setBall({ x: 200, y: 250, vx: 0, vy: 0 });
+    setPaddle({ x: 175, y: 275 });
     setScore(0);
     setGameOver(false);
     setGameStarted(true);
   };
+
+  useEffect(() => {
+    const updateGameArea = () => {
+      const width = Math.min(800, window.innerWidth - 40);
+      const height = Math.min(400, window.innerHeight - 300);
+      setGameArea({ width, height });
+    };
+    
+    updateGameArea();
+    window.addEventListener('resize', updateGameArea);
+    return () => window.removeEventListener('resize', updateGameArea);
+  }, []);
 
   useEffect(() => {
     if (!gameStarted) return;
@@ -761,17 +622,37 @@ const BreakoutGame = () => {
       
       switch (e.key) {
         case 'ArrowLeft':
-          setPaddle(prev => ({ ...prev, x: Math.max(0, prev.x - 20) }));
+        case 'a':
+          setPaddle(prev => ({ ...prev, x: Math.max(30, prev.x - 20) }));
           break;
         case 'ArrowRight':
-          setPaddle(prev => ({ ...prev, x: Math.min(750, prev.x + 20) }));
+        case 'd':
+          setPaddle(prev => ({ ...prev, x: Math.min(gameArea.width - 30, prev.x + 20) }));
           break;
       }
     };
 
+    const handleTouch = (e) => {
+      if (gameOver) return;
+      const touch = e.touches[0];
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      setPaddle(prev => ({ ...prev, x: Math.max(30, Math.min(gameArea.width - 30, x)) }));
+    };
+
     window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [gameStarted, gameOver]);
+    const gameElement = document.getElementById('breakout-game');
+    if (gameElement) {
+      gameElement.addEventListener('touchmove', handleTouch, { passive: true });
+    }
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      if (gameElement) {
+        gameElement.removeEventListener('touchmove', handleTouch);
+      }
+    };
+  }, [gameStarted, gameOver, gameArea.width]);
 
   return (
     <div className="text-center space-y-6 p-6">
@@ -790,24 +671,28 @@ const BreakoutGame = () => {
             Score: {score}
           </div>
           
-          <div className="relative bg-gray-900 rounded-lg p-4" style={{ width: '800px', height: '400px' }}>
+          <div 
+            id="breakout-game"
+            className="relative bg-gray-900 rounded-lg p-4 mx-auto" 
+            style={{ width: `${gameArea.width}px`, height: `${gameArea.height}px` }}
+          >
             {/* Ball */}
             <div
-              className="absolute w-4 h-4 bg-blue-500 rounded-full"
+              className="absolute w-2 h-2 sm:w-4 sm:h-4 bg-blue-500 rounded-full"
               style={{
-                left: `${ball.x - 8}px`,
-                top: `${ball.y - 8}px`,
+                left: `${(ball.x / 400) * gameArea.width - 4}px`,
+                top: `${(ball.y / 200) * gameArea.height - 4}px`,
                 transition: 'all 0.1s'
               }}
             />
             
             {/* Paddle */}
             <div
-              className="absolute h-4 bg-green-500 rounded"
+              className="absolute h-2 sm:h-4 bg-green-500 rounded"
               style={{
-                left: `${paddle.x - 30}px`,
-                top: `${paddle.y - 8}px`,
-                width: '60px',
+                left: `${(paddle.x / 400) * gameArea.width - 15}px`,
+                top: `${(paddle.y / 200) * gameArea.height - 4}px`,
+                width: '30px sm:w-60px',
                 transition: 'all 0.1s'
               }}
             />
@@ -819,12 +704,12 @@ const BreakoutGame = () => {
                   key={index}
                   className="absolute rounded"
                   style={{
-                    left: `${brick.x}px`,
-                    top: `${brick.y}px`,
-                    width: `${brick.width}px`,
-                    height: `${brick.height}px`,
+                    left: `${(brick.x / 400) * gameArea.width}px`,
+                    top: `${(brick.y / 200) * gameArea.height}px`,
+                    width: `${(brick.width / 400) * gameArea.width}px`,
+                    height: `${(brick.height / 200) * gameArea.height}px`,
                     backgroundColor: brick.color,
-                    border: '2px solid rgba(0,0,0,0.3)'
+                    border: '1px solid rgba(0,0,0,0.3)'
                   }}
                 />
               )
@@ -852,7 +737,7 @@ const BreakoutGame = () => {
 // 🔹 Snake Game
 const SnakeGame = () => {
   const GRID_SIZE = 20;
-  const CELL_SIZE = 20;
+  const [cellSize, setCellSize] = useState(20);
   const [snake, setSnake] = useState([{ x: 10, y: 10 }]);
   const [food, setFood] = useState({ x: 15, y: 15, type: 'normal' });
   const [direction, setDirection] = useState('RIGHT');
@@ -885,16 +770,74 @@ const SnakeGame = () => {
   };
 
   useEffect(() => {
+    const updateCellSize = () => {
+      const maxSize = Math.min(20, Math.floor((window.innerWidth - 40) / GRID_SIZE));
+      setCellSize(Math.max(10, maxSize));
+    };
+    
+    updateCellSize();
+    window.addEventListener('resize', updateCellSize);
+    return () => window.removeEventListener('resize', updateCellSize);
+  }, []);
+
+  useEffect(() => {
     const handleKeyPress = (e) => {
       switch (e.key) {
-        case 'ArrowUp': if (direction !== 'DOWN') setDirection('UP'); break;
-        case 'ArrowDown': if (direction !== 'UP') setDirection('DOWN'); break;
-        case 'ArrowLeft': if (direction !== 'RIGHT') setDirection('LEFT'); break;
-        case 'ArrowRight': if (direction !== 'LEFT') setDirection('RIGHT'); break;
+        case 'ArrowUp': 
+        case 'w': 
+          if (direction !== 'DOWN') setDirection('UP'); 
+          break;
+        case 'ArrowDown': 
+        case 's': 
+          if (direction !== 'UP') setDirection('DOWN'); 
+          break;
+        case 'ArrowLeft': 
+        case 'a': 
+          if (direction !== 'RIGHT') setDirection('LEFT'); 
+          break;
+        case 'ArrowRight': 
+        case 'd': 
+          if (direction !== 'LEFT') setDirection('RIGHT'); 
+          break;
       }
     };
+
+    const handleTouch = (e) => {
+      if (!e.touches.length) return;
+      const touch = e.touches[0];
+      const gameElement = document.getElementById('snake-game');
+      if (!gameElement) return;
+      
+      const rect = gameElement.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const dx = x - centerX;
+      const dy = y - centerY;
+      
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 0 && direction !== 'LEFT') setDirection('RIGHT');
+        else if (dx < 0 && direction !== 'RIGHT') setDirection('LEFT');
+      } else {
+        if (dy > 0 && direction !== 'UP') setDirection('DOWN');
+        else if (dy < 0 && direction !== 'DOWN') setDirection('UP');
+      }
+    };
+
     window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    const gameElement = document.getElementById('snake-game');
+    if (gameElement) {
+      gameElement.addEventListener('touchstart', handleTouch, { passive: true });
+    }
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      if (gameElement) {
+        gameElement.removeEventListener('touchstart', handleTouch);
+      }
+    };
   }, [direction]);
 
   useEffect(() => {
@@ -961,8 +904,9 @@ const SnakeGame = () => {
       </div>
       
       <div 
-        className="bg-gray-800 border-2 border-gray-700 relative mb-6"
-        style={{ width: GRID_SIZE * CELL_SIZE, height: GRID_SIZE * CELL_SIZE }}
+        id="snake-game"
+        className="bg-gray-800 border-2 border-gray-700 relative mb-6 mx-auto"
+        style={{ width: GRID_SIZE * cellSize, height: GRID_SIZE * cellSize }}
       >
         {/* Snake Body */}
         {snake.map((segment, i) => (
@@ -976,10 +920,10 @@ const SnakeGame = () => {
                 : 'bg-green-600' // Body
             }`}
             style={{
-              width: CELL_SIZE - 2,
-              height: CELL_SIZE - 2,
-              left: segment.x * CELL_SIZE,
-              top: segment.y * CELL_SIZE,
+              width: cellSize - 2,
+              height: cellSize - 2,
+              left: segment.x * cellSize,
+              top: segment.y * cellSize,
               ...(i === 0 && {
                 boxShadow: '0 0 10px rgba(74, 222, 128, 0.5)'
               }),
@@ -994,19 +938,19 @@ const SnakeGame = () => {
                 <div 
                   className="absolute bg-black rounded-full"
                   style={{
-                    width: 4,
-                    height: 4,
-                    left: direction === 'LEFT' ? 2 : direction === 'RIGHT' ? 10 : 6,
-                    top: direction === 'UP' ? 2 : direction === 'DOWN' ? 10 : 6
+                    width: Math.max(2, cellSize / 10),
+                    height: Math.max(2, cellSize / 10),
+                    left: direction === 'LEFT' ? 1 : direction === 'RIGHT' ? cellSize / 2 : cellSize / 3,
+                    top: direction === 'UP' ? 1 : direction === 'DOWN' ? cellSize / 2 : cellSize / 3
                   }}
                 />
                 <div 
                   className="absolute bg-black rounded-full"
                   style={{
-                    width: 4,
-                    height: 4,
-                    left: direction === 'LEFT' ? 10 : direction === 'RIGHT' ? 2 : 12,
-                    top: direction === 'UP' ? 2 : direction === 'DOWN' ? 10 : 6
+                    width: Math.max(2, cellSize / 10),
+                    height: Math.max(2, cellSize / 10),
+                    left: direction === 'LEFT' ? cellSize / 2 : direction === 'RIGHT' ? 1 : cellSize * 0.6,
+                    top: direction === 'UP' ? 1 : direction === 'DOWN' ? cellSize / 2 : cellSize / 3
                   }}
                 />
               </>
@@ -1016,10 +960,10 @@ const SnakeGame = () => {
               <div 
                 className="absolute bg-green-800 rounded-full"
                 style={{
-                  width: 6,
-                  height: 6,
-                  left: 7,
-                  top: 7
+                  width: Math.max(3, cellSize / 3),
+                  height: Math.max(3, cellSize / 3),
+                  left: cellSize * 0.35,
+                  top: cellSize * 0.35
                 }}
               />
             )}
@@ -1036,10 +980,10 @@ const SnakeGame = () => {
               : 'bg-red-500'
           }`}
           style={{
-            width: food.type === 'super' ? CELL_SIZE + 8 : food.type === 'big' ? CELL_SIZE + 4 : CELL_SIZE - 2,
-            height: food.type === 'super' ? CELL_SIZE + 8 : food.type === 'big' ? CELL_SIZE + 4 : CELL_SIZE - 2,
-            left: food.x * CELL_SIZE + (food.type === 'super' ? -4 : food.type === 'big' ? -2 : 0),
-            top: food.y * CELL_SIZE + (food.type === 'super' ? -4 : food.type === 'big' ? -2 : 0),
+            width: food.type === 'super' ? cellSize + cellSize/2 : food.type === 'big' ? cellSize + cellSize/4 : cellSize - 2,
+            height: food.type === 'super' ? cellSize + cellSize/2 : food.type === 'big' ? cellSize + cellSize/4 : cellSize - 2,
+            left: food.x * cellSize + (food.type === 'super' ? -cellSize/4 : food.type === 'big' ? -cellSize/8 : 0),
+            top: food.y * cellSize + (food.type === 'super' ? -cellSize/4 : food.type === 'big' ? -cellSize/8 : 0),
             ...(food.type === 'super' && {
               boxShadow: '0 0 20px rgba(168, 85, 247, 0.8)',
               animation: 'pulse 1s infinite, bounce 2s infinite'
@@ -1050,7 +994,7 @@ const SnakeGame = () => {
           }}
         >
           {food.type === 'super' && (
-            <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs">
+            <div className="absolute inset-0 flex items-center justify-center text-white font-bold" style={{ fontSize: cellSize / 3 }}>
               ⭐
             </div>
           )}
@@ -1074,168 +1018,17 @@ const SnakeGame = () => {
       </div>
       
       <div className="text-sm text-gray-400 space-y-1">
-        <p>Use Arrow Keys to Move</p>
+        <p>Desktop: Arrow Keys or WASD to Move</p>
+        <p>Mobile: Tap to Change Direction</p>
         <p>🔴 Red = 10pts | 🟡 Yellow = 20pts | 🟣 Purple = 50pts</p>
       </div>
     </div>
   );
 };
 
-// 🔹 Word Guess Game
-const WordGuessGame = () => {
-  const words = ['REACT', 'CODING', 'GAMES', 'PUZZLE', 'PLAYER', 'SCORE', 'WINNER', 'ARCADE', 'FUNTIME', 'MASTER'];
-  const [word, setWord] = useState('');
-  const [guessedLetters, setGuessedLetters] = useState([]);
-  const [wrongGuesses, setWrongGuesses] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
-  const [gameWon, setGameWon] = useState(false);
-
-  const maxWrongGuesses = 6;
-
-  const initializeGame = () => {
-    const randomWord = words[Math.floor(Math.random() * words.length)];
-    setWord(randomWord);
-    setGuessedLetters([]);
-    setWrongGuesses(0);
-    setGameOver(false);
-    setGameWon(false);
-  };
-
-  useEffect(() => {
-    initializeGame();
-  }, []);
-
-  const handleGuess = (letter) => {
-    if (guessedLetters.includes(letter) || gameOver || gameWon) return;
-
-    const newGuessedLetters = [...guessedLetters, letter];
-    setGuessedLetters(newGuessedLetters);
-
-    if (!word.includes(letter)) {
-      const newWrongGuesses = wrongGuesses + 1;
-      setWrongGuesses(newWrongGuesses);
-      if (newWrongGuesses >= maxWrongGuesses) {
-        setGameOver(true);
-      }
-    } else {
-      const wordComplete = word.split('').every(l => newGuessedLetters.includes(l));
-      if (wordComplete) {
-        setGameWon(true);
-      }
-    }
-  };
-
-  const renderHangman = () => {
-    const parts = [
-      <circle key="head" cx="50" cy="25" r="10" stroke="white" strokeWidth="2" fill="none" />,
-      <line key="body" x1="50" y1="35" x2="50" y2="60" stroke="white" strokeWidth="2" />,
-      <line key="leftArm" x1="50" y1="40" x2="35" y2="50" stroke="white" strokeWidth="2" />,
-      <line key="rightArm" x1="50" y1="40" x2="65" y2="50" stroke="white" strokeWidth="2" />,
-      <line key="leftLeg" x1="50" y1="60" x2="35" y2="75" stroke="white" strokeWidth="2" />,
-      <line key="rightLeg" x1="50" y1="60" x2="65" y2="75" stroke="white" strokeWidth="2" />
-    ];
-
-    return (
-      <svg width="100" height="100" className="bg-gray-800 rounded-lg">
-        <line x1="10" y1="90" x2="30" y2="90" stroke="white" strokeWidth="2" />
-        <line x1="20" y1="90" x2="20" y2="10" stroke="white" strokeWidth="2" />
-        <line x1="20" y1="10" x2="50" y2="10" stroke="white" strokeWidth="2" />
-        <line x1="50" y1="10" x2="50" y2="15" stroke="white" strokeWidth="2" />
-        {parts.slice(0, wrongGuesses)}
-      </svg>
-    );
-  };
-
-  return (
-    <div className="text-center space-y-6 p-6">
-      <h2 className="text-3xl font-bold text-teal-500">Word Guess</h2>
-      
-      <div className="bg-gray-800 p-4 rounded-lg max-w-2xl mx-auto">
-        <h3 className="text-lg font-bold text-white mb-3">How to Play:</h3>
-        <div className="text-gray-300 space-y-1 text-sm text-left">
-          <p>🔤 <strong>Goal:</strong> Guess the hidden word letter by letter</p>
-          <p>❌ <strong>Lives:</strong> You have 6 wrong guesses before game over</p>
-          <p>🎯 <strong>Strategy:</strong> Start with common vowels (A, E, I, O, U)</p>
-          <p>🧩 <strong>Hint:</strong> Look for patterns in the word structure</p>
-        </div>
-      </div>
-      
-      <div className="flex justify-center mb-6">
-        {renderHangman()}
-      </div>
-
-      <div className="text-2xl font-mono space-x-2">
-        {word.split('').map((letter, index) => (
-          <span key={index} className="inline-block w-8 border-b-2 border-white">
-            {guessedLetters.includes(letter) ? letter : ''}
-          </span>
-        ))}
-      </div>
-
-      <div className="text-lg text-gray-300">
-        Wrong Guesses: <span className="font-bold text-red-400">{wrongGuesses}</span> / {maxWrongGuesses}
-        {wrongGuesses > 0 && (
-          <span className="ml-4 text-sm">
-            ({maxWrongGuesses - wrongGuesses} lives left)
-          </span>
-        )}
-      </div>
-
-      {!gameOver && !gameWon && (
-        <div className="grid grid-cols-7 gap-2 max-w-md mx-auto">
-          {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => (
-            <button
-              key={letter}
-              onClick={() => handleGuess(letter)}
-              disabled={guessedLetters.includes(letter)}
-              className={`p-2 rounded font-bold transition-all transform hover:scale-105 ${
-                guessedLetters.includes(letter)
-                  ? word.includes(letter)
-                    ? 'bg-green-600 text-white'
-                    : 'bg-red-600 text-white'
-                  : 'bg-gray-700 text-white hover:bg-gray-600'
-              }`}
-            >
-              {letter}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {gameOver && (
-        <div className="text-center space-y-4">
-          <p className="text-2xl font-bold text-red-500">💀 Game Over!</p>
-          <p className="text-xl text-white">The word was: <span className="font-bold text-yellow-400">{word}</span></p>
-          <button
-            onClick={initializeGame}
-            className="px-6 py-3 bg-teal-600 rounded-full font-bold text-white hover:bg-teal-700"
-          >
-            Try Again
-          </button>
-        </div>
-      )}
-
-      {gameWon && (
-        <div className="text-center space-y-4">
-          <p className="text-2xl font-bold text-green-500">🎉 You Won!</p>
-          <p className="text-white">You guessed the word: <span className="font-bold text-green-400">{word}</span></p>
-          <p className="text-sm text-gray-400">
-            Wrong guesses: {wrongGuesses} {wrongGuesses <= 2 && '⭐ Perfect!'}
-          </p>
-          <button
-            onClick={initializeGame}
-            className="px-6 py-3 bg-teal-600 rounded-full font-bold text-white hover:bg-teal-700"
-          >
-            New Word
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
 // 🔹 Space Shooter Game
 const SpaceShooterGame = () => {
+  const [gameArea, setGameArea] = useState({ width: 800, height: 600 });
   const [player, setPlayer] = useState({ x: 400, y: 500 });
   const [bullets, setBullets] = useState([]);
   const [enemies, setEnemies] = useState([]);
@@ -1243,6 +1036,18 @@ const SpaceShooterGame = () => {
   const [gameOver, setGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [keys, setKeys] = useState({});
+
+  useEffect(() => {
+    const updateGameArea = () => {
+      const width = Math.min(800, window.innerWidth - 40);
+      const height = Math.min(600, window.innerHeight - 200);
+      setGameArea({ width, height });
+    };
+    
+    updateGameArea();
+    window.addEventListener('resize', updateGameArea);
+    return () => window.removeEventListener('resize', updateGameArea);
+  }, []);
 
   useEffect(() => {
     if (!gameStarted || gameOver) return;
@@ -1255,14 +1060,49 @@ const SpaceShooterGame = () => {
       setKeys(prev => ({ ...prev, [e.key]: false }));
     };
 
+    const handleTouch = (e) => {
+      if (!e.touches.length) return;
+      const touch = e.touches[0];
+      const gameElement = document.getElementById('space-shooter-game');
+      if (!gameElement) return;
+      
+      const rect = gameElement.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      
+      setPlayer(prev => ({
+        x: Math.max(20, Math.min(gameArea.width - 20, x)),
+        y: Math.max(20, Math.min(gameArea.height - 20, y))
+      }));
+      
+      // Auto shoot on touch
+      setBullets(prev => {
+        const now = Date.now();
+        const lastBullet = prev[prev.length - 1];
+        if (!lastBullet || now - lastBullet.time > 200) {
+          return [...prev, { x: x, y: y - 10, time: now }];
+        }
+        return prev;
+      });
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    const gameElement = document.getElementById('space-shooter-game');
+    if (gameElement) {
+      gameElement.addEventListener('touchmove', handleTouch, { passive: true });
+      gameElement.addEventListener('touchstart', handleTouch, { passive: true });
+    }
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      if (gameElement) {
+        gameElement.removeEventListener('touchmove', handleTouch);
+        gameElement.removeEventListener('touchstart', handleTouch);
+      }
     };
-  }, [gameStarted, gameOver]);
+  }, [gameStarted, gameOver, gameArea]);
 
   useEffect(() => {
     if (!gameStarted || gameOver) return;
@@ -1274,9 +1114,9 @@ const SpaceShooterGame = () => {
         let newY = prev.y;
         
         if (keys['ArrowLeft'] || keys['a']) newX = Math.max(20, newX - 8);
-        if (keys['ArrowRight'] || keys['d']) newX = Math.min(780, newX + 8);
+        if (keys['ArrowRight'] || keys['d']) newX = Math.min(gameArea.width - 20, newX + 8);
         if (keys['ArrowUp'] || keys['w']) newY = Math.max(20, newY - 8);
-        if (keys['ArrowDown'] || keys['s']) newY = Math.min(580, newY + 8);
+        if (keys['ArrowDown'] || keys['s']) newY = Math.min(gameArea.height - 20, newY + 8);
         
         return { x: newX, y: newY };
       });
@@ -1302,13 +1142,13 @@ const SpaceShooterGame = () => {
       // Move enemies
       setEnemies(prev => prev
         .map(enemy => ({ ...enemy, y: enemy.y + 2 }))
-        .filter(enemy => enemy.y < 610)
+        .filter(enemy => enemy.y < gameArea.height + 20)
       );
 
       // Spawn enemies
       if (Math.random() < 0.02) {
         setEnemies(prev => [...prev, {
-          x: Math.random() * 760 + 20,
+          x: Math.random() * (gameArea.width - 40) + 20,
           y: -20,
           id: Date.now()
         }]);
@@ -1356,7 +1196,7 @@ const SpaceShooterGame = () => {
     }, 1000 / 60);
 
     return () => clearInterval(gameLoop);
-  }, [gameStarted, gameOver, keys, player.x, player.y, enemies]);
+  }, [gameStarted, gameOver, keys, player.x, player.y, enemies, gameArea]);
 
   const startGame = () => {
     setGameStarted(true);
@@ -1376,15 +1216,14 @@ const SpaceShooterGame = () => {
           <div className="bg-gray-800 p-6 rounded-lg max-w-2xl mx-auto">
             <h3 className="text-xl font-bold text-white mb-4">How to Play:</h3>
             <div className="text-gray-300 space-y-2 text-left">
-              <p>🎮 <strong>Movement:</strong> Arrow Keys or WASD</p>
-              <p>🔫 <strong>Shoot:</strong> Spacebar</p>
+              <p>🎮 <strong>Desktop:</strong> Arrow Keys or WASD to move, Spacebar to shoot</p>
+              <p>📱 <strong>Mobile:</strong> Touch to move spaceship, auto-shoots</p>
               <p>👾 <strong>Goal:</strong> Destroy enemies to earn points</p>
               <p>💥 <strong>Avoid:</strong> Don't let enemies hit your spaceship</p>
               <p>🏆 <strong>Scoring:</strong> 10 points per enemy destroyed</p>
             </div>
           </div>
           
-          {/* Visual Controls Display */}
           <div className="bg-gray-800 p-6 rounded-lg max-w-md mx-auto">
             <h4 className="text-lg font-bold text-white mb-4">Controls:</h4>
             <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto mb-4">
@@ -1415,7 +1254,6 @@ const SpaceShooterGame = () => {
               Score: <span className="font-bold text-white">{score}</span>
             </div>
             
-            {/* Live Controls Display */}
             <div className="bg-gray-800 p-3 rounded-lg">
               <div className="flex items-center space-x-4">
                 <div className="text-gray-300 text-sm">
@@ -1434,43 +1272,51 @@ const SpaceShooterGame = () => {
               </div>
             </div>
           </div>
-          
-          <div className="relative bg-gray-900 rounded-lg border-2 border-gray-700 mx-auto" style={{ width: '900px', height: '650px' }}>
-            {/* Player Spaceship */}
+      
+          <div 
+            id="space-shooter-game"
+            className="relative bg-gray-900 rounded-lg border-2 border-gray-700 mx-auto" 
+            style={{ width: `${gameArea.width}px`, height: `${gameArea.height}px` }}
+          >
             <div
-              className="absolute w-0 h-0 transition-all duration-100"
+              className="absolute transition-all duration-100"
               style={{
-                left: `${player.x - 15}px`,
-                top: `${player.y - 15}px`,
-                borderLeft: '15px solid transparent',
-                borderRight: '15px solid transparent',
-                borderBottom: '30px solid #10b981',
-                filter: 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.5))'
+                left: `${(player.x / 800) * gameArea.width - 15}px`,
+                top: `${(player.y / 600) * gameArea.height - 15}px`,
+                transform: 'scale(0.8)'
               }}
-            />
+            >
+              <div
+                className="w-0 h-0"
+                style={{
+                  borderLeft: '12px solid transparent',
+                  borderRight: '12px solid transparent',
+                  borderBottom: '24px solid #10b981',
+                  filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))'
+                }}
+              />
+            </div>
             
-            {/* Bullets */}
             {bullets.map((bullet, index) => (
               <div
                 key={index}
-                className="absolute w-2 h-4 bg-yellow-400 rounded-full"
+                className="absolute w-1 h-2 sm:w-2 sm:h-4 bg-yellow-400 rounded-full"
                 style={{
-                  left: `${bullet.x - 1}px`,
-                  top: `${bullet.y - 2}px`,
-                  boxShadow: '0 0 8px rgba(250, 204, 21, 0.8)'
+                  left: `${(bullet.x / 800) * gameArea.width - 1}px`,
+                  top: `${(bullet.y / 600) * gameArea.height - 2}px`,
+                  boxShadow: '0 0 6px rgba(250, 204, 21, 0.8)'
                 }}
               />
             ))}
             
-            {/* Enemies */}
             {enemies.map(enemy => (
               <div
                 key={enemy.id}
-                className="absolute w-8 h-8 bg-red-500 rounded-full animate-pulse"
+                className="absolute w-4 h-4 sm:w-8 sm:h-8 bg-red-500 rounded-full animate-pulse"
                 style={{
-                  left: `${enemy.x - 16}px`,
-                  top: `${enemy.y - 16}px`,
-                  boxShadow: '0 0 12px rgba(239, 68, 68, 0.6)'
+                  left: `${(enemy.x / 800) * gameArea.width - 4}px`,
+                  top: `${(enemy.y / 600) * gameArea.height - 4}px`,
+                  boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)'
                 }}
               />
             ))}
@@ -1490,7 +1336,8 @@ const SpaceShooterGame = () => {
           </div>
           
           <div className="text-sm text-gray-400">
-            Use Arrow Keys/WASD to move • Spacebar to shoot
+            <p>Desktop: Arrow Keys/WASD to move • Spacebar to shoot</p>
+            <p>Mobile: Touch to move spaceship • Auto-shoots</p>
           </div>
         </>
       )}

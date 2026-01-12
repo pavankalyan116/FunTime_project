@@ -141,7 +141,7 @@ const SingWithMe = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-6">
+              <div className="space-y-6 order-2 md:order-1">
                  {/* Audio Player */}
                  <div className="transition-opacity duration-500">
                     <AudioPlayer 
@@ -157,7 +157,7 @@ const SingWithMe = () => {
                     {isRecording && (
                         <div className="absolute top-0 left-0 w-full h-1 bg-red-600 animate-pulse shadow-[0_0_10px_#ef4444]" />
                     )}
-                    <h3 className="font-semibold text-lg">Studio Controls</h3>
+                    <h3 className="font-semibold text-lg">Record Your Voice</h3>
                     
                     {!isRecording ? (
                       <button
@@ -198,7 +198,7 @@ const SingWithMe = () => {
               </div>
 
               {/* Lyrics Display */}
-              <div className="h-full">
+              <div className="h-full order-1 md:order-2">
                 <KaraokeLyrics segments={segments} currentTime={currentTime} />
               </div>
             </div>
