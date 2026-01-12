@@ -1,7 +1,7 @@
 
 import { useEffect, useRef } from "react";
 
-export default function KaraokeLyrics({ segments, currentTime }) {
+export default function KaraokeLyrics({ segments, words, currentTime }) {
   const activeRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -99,38 +99,44 @@ export default function KaraokeLyrics({ segments, currentTime }) {
                   ? "bg-slate-700/50 border-slate-600/50" 
                   : "bg-slate-800/30 border-slate-700/30"
               }`}>
-                {/* Progress indicator for active segment */}
-                {isActive && (
-                  <div className="absolute inset-0 rounded-xl overflow-hidden">
-                    <div 
-                      className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20"
-                      style={{ width: `${progress * 100}%` }}
-                    ></div>
-                  </div>
+                {isActive && words && words.length > 0 ? (
+                    <p className="text-xl md:text-2xl font-bold text-white leading-relaxed tracking-wide">
+                        {words
+                            .filter(w => w.start >= segment.start - 0.5 && w.end <= segment.end + 0.5)
+                            .map((word, wIdx) => {
+                                const isWordActive = currentTime >= word.start && currentTime <= word.end;
+                                const isWordPast = currentTime > word.end;
+                                return (
+                                    <span 
+                                        key={wIdx} 
+                                        className={`inline-block mr-1 transition-colors duration-100 ${
+                                            isWordActive 
+                                                ? "text-yellow-300 scale-110" 
+                                                : isWordPast 
+                                                ? "text-white/90" 
+                                                : "text-white/50"
+                                        }`}
+                                    >
+                                        {word.word}
+                                    </span>
+                                );
+                            })}
+                        {/* Fallback if filtering missed words but segment is active (rare) */}
+                         {words.filter(w => w.start >= segment.start - 0.5 && w.end <= segment.end + 0.5).length === 0 && segment.text}
+                    </p>
+                ) : (
+                    <p className="text-xl md:text-2xl font-bold text-white leading-relaxed tracking-wide">
+                      {segment.text}
+                    </p>
                 )}
                 
-                <div className="relative z-10">
-                  <p className={`text-lg leading-relaxed font-medium ${
-                    isActive 
-                      ? "text-white" 
-                      : isPast 
-                      ? "text-gray-400" 
-                      : "text-gray-500"
-                  }`}>
-                    {segment.text}
-                  </p>
-                  
+                {/* Time Indicator */}
+                <div className="mt-2 flex justify-between items-center text-xs">
+                  <span className={`font-mono ${isActive ? "text-blue-200" : "text-gray-500"}`}>
+                    {Math.floor(segment.start / 60)}:{Math.floor(segment.start % 60).toString().padStart(2, '0')}
+                  </span>
                   {isActive && (
-                    <div className="flex items-center justify-between mt-3 text-xs">
-                      <div className="flex items-center text-blue-300">
-                        <span className="mr-1" aria-hidden="true">⏱️</span>
-                        {formatTime(segment.start)} - {formatTime(segment.end)}
-                      </div>
-                      <div className="flex items-center text-green-300">
-                        <span className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></span>
-                        Now Playing
-                      </div>
-                    </div>
+                    <span className="text-yellow-300 animate-pulse font-bold">Now Singing</span>
                   )}
                 </div>
               </div>

@@ -1,45 +1,295 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gamepad2, X } from 'lucide-react';
+import { Gamepad2, X, Trophy, Star, Zap, Target, Timer, Sparkles } from 'lucide-react';
 
 const Arcade = () => {
   const [activeGame, setActiveGame] = useState(null);
+  const [gameStats, setGameStats] = useState({
+    totalGamesPlayed: 0,
+    totalScore: 0,
+    favoriteGame: null
+  });
 
   const games = [
-    { id: 'tictactoe', name: 'Tic Tac Toe', description: 'Classic strategy game', color: 'from-blue-500 to-cyan-500' },
-    { id: 'snake', name: 'Snake', description: 'Eat apples, grow long, don\'t crash', color: 'from-green-500 to-emerald-500' },
-    { id: 'rps', name: 'Rock Paper Scissors', description: 'Beat the computer in this classic hand game', color: 'from-orange-500 to-red-500' },
-    { id: 'reaction', name: 'Reaction Test', description: 'Test your reflexes against the computer', color: 'from-purple-500 to-indigo-500' },
-    { id: 'numberpuzzle', name: 'Number Puzzle', description: 'Slide tiles to arrange numbers in order', color: 'from-indigo-500 to-purple-500' },
-    { id: 'space-shooter', name: 'Space Shooter', description: 'Arcade shooter powered by Phaser', color: 'from-pink-500 to-rose-500' }
+    { 
+      id: 'tictactoe', 
+      name: 'Tic Tac Toe', 
+      description: 'Classic strategy vs AI', 
+      color: 'from-blue-500 to-cyan-500',
+      icon: '⭕',
+      difficulty: 'Medium',
+      category: 'Strategy'
+    },
+    { 
+      id: 'snake', 
+      name: 'Snake Game', 
+      description: 'Eat, grow, survive', 
+      color: 'from-green-500 to-emerald-500',
+      icon: '🐍',
+      difficulty: 'Easy',
+      category: 'Arcade'
+    },
+    { 
+      id: 'rps', 
+      name: 'Rock Paper Scissors', 
+      description: 'Beat the computer', 
+      color: 'from-orange-500 to-red-500',
+      icon: '✂️',
+      difficulty: 'Easy',
+      category: 'Casual'
+    },
+    { 
+      id: 'reaction', 
+      name: 'Reaction Test', 
+      description: 'Test your reflexes', 
+      color: 'from-purple-500 to-indigo-500',
+      icon: '⚡',
+      difficulty: 'Medium',
+      category: 'Skill'
+    },
+    { 
+      id: 'numberpuzzle', 
+      name: 'Number Puzzle', 
+      description: 'Slide tiles to order', 
+      color: 'from-indigo-500 to-purple-500',
+      icon: '🧩',
+      difficulty: 'Hard',
+      category: 'Puzzle'
+    },
+    { 
+      id: 'space-shooter', 
+      name: 'Space Shooter', 
+      description: 'Defend against aliens', 
+      color: 'from-pink-500 to-rose-500',
+      icon: '🚀',
+      difficulty: 'Medium',
+      category: 'Action'
+    }
   ];
 
-  return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gray-950 p-4 sm:p-6 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 bg-gradient-to-r from-green-400 to-emerald-600 bg-clip-text text-transparent text-center">
-          Arcade Zone
-        </h1>
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.9 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { 
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
+
+  const modalVariants = {
+    hidden: { 
+      opacity: 0,
+      scale: 0.8,
+      y: 50
+    },
+    visible: { 
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30
+      }
+    },
+    exit: { 
+      opacity: 0,
+      scale: 0.8,
+      y: 50,
+      transition: {
+        duration: 0.2
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-4 sm:p-6 md:p-8 relative overflow-hidden">
+      {/* Enhanced Background Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.05, 0.1, 0.05]
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+          className="absolute -top-24 -left-24 w-80 h-80 bg-green-500/10 rounded-full blur-3xl"
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.05, 0.08, 0.05]
+          }}
+          transition={{ duration: 10, repeat: Infinity, delay: 2 }}
+          className="absolute top-24 -right-24 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.3, 1],
+            opacity: [0.03, 0.06, 0.03]
+          }}
+          transition={{ duration: 12, repeat: Infinity, delay: 4 }}
+          className="absolute -bottom-28 left-1/3 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Enhanced Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-green-900/40 via-blue-900/40 to-purple-900/40 border border-green-500/30 backdrop-blur-sm mb-6"
+          >
+            <Gamepad2 className="w-6 h-6 text-green-400" />
+            <span className="text-sm font-semibold text-green-200">Retro Gaming Collection</span>
+            <Zap className="w-5 h-5 text-yellow-400" />
+          </motion.div>
+
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-5xl md:text-6xl font-black bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4"
+          >
+            Arcade Zone
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed"
+          >
+            Classic games reimagined with modern flair. Challenge yourself across multiple genres and skill levels.
+          </motion.p>
+
+          {/* Stats Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="flex justify-center space-x-6 mt-6 text-sm"
+          >
+            <div className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-full border border-gray-700/50">
+              <Trophy className="w-4 h-4 text-yellow-400" />
+              <span className="text-gray-300">{games.length} Games</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-full border border-gray-700/50">
+              <Star className="w-4 h-4 text-blue-400" />
+              <span className="text-gray-300">6 Categories</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-full border border-gray-700/50">
+              <Target className="w-4 h-4 text-green-400" />
+              <span className="text-gray-300">All Skill Levels</span>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Enhanced Games Grid */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+        >
           {games.map((game) => (
             <motion.div
               key={game.id}
-              whileHover={{ scale: 1.05 }}
+              variants={cardVariants}
+              whileHover={{ 
+                scale: 1.05,
+                rotateY: 5,
+                z: 50
+              }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveGame(game.id)}
-              className={`p-5 sm:p-6 rounded-2xl bg-gradient-to-br ${game.color} cursor-pointer shadow-xl min-h-[160px] sm:min-h-[200px] flex flex-col justify-between`}
+              className={`group relative p-6 rounded-3xl bg-gradient-to-br ${game.color} cursor-pointer shadow-2xl min-h-[240px] flex flex-col justify-between overflow-hidden border border-white/10`}
+              style={{
+                transformStyle: "preserve-3d"
+              }}
             >
-              <div>
-                <Gamepad2 className="w-8 h-8 sm:w-10 sm:h-10 text-white mb-3 sm:mb-4" />
-                <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">{game.name}</h2>
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-4 right-4 text-6xl opacity-30">{game.icon}</div>
+                <div className="absolute bottom-4 left-4 w-20 h-20 border-2 border-white/20 rounded-full"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-white/10 rounded-full"></div>
               </div>
-              <p className="text-white/90 text-sm">{game.description}</p>
+
+              {/* Content */}
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                    {game.icon}
+                  </div>
+                  <div className="flex flex-col items-end space-y-1">
+                    <span className="px-2 py-1 bg-white/20 rounded-full text-xs font-semibold text-white">
+                      {game.category}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      game.difficulty === 'Easy' ? 'bg-green-500/20 text-green-200' :
+                      game.difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-200' :
+                      'bg-red-500/20 text-red-200'
+                    }`}>
+                      {game.difficulty}
+                    </span>
+                  </div>
+                </div>
+                
+                <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-yellow-100 transition-colors">
+                  {game.name}
+                </h2>
+              </div>
+              
+              <div className="relative z-10">
+                <p className="text-white/90 text-sm leading-relaxed mb-4">
+                  {game.description}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    className="flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-white text-sm font-semibold"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Play Now
+                  </motion.div>
+                  
+                  <div className="text-white/60 text-xs">
+                    Click to start
+                  </div>
+                </div>
+              </div>
+
+              {/* Hover Effect */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              />
             </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        {/* MODAL */}
+        {/* Enhanced Modal */}
         <AnimatePresence>
           {activeGame && (
             <motion.div
@@ -47,27 +297,61 @@ const Arcade = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={(e) => e.target === e.currentTarget && setActiveGame(null)}
             >
               <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                className="bg-gray-900 rounded-2xl p-6 md:p-8 w-full max-w-5xl relative border border-gray-800 shadow-2xl max-h-[95vh] overflow-y-auto custom-scrollbar"
+                variants={modalVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 rounded-3xl p-6 md:p-8 w-full max-w-6xl relative border border-gray-700/50 shadow-2xl max-h-[95vh] overflow-y-auto backdrop-blur-sm"
               >
-                <button
+                {/* Enhanced Close Button */}
+                <motion.button
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setActiveGame(null)}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                  className="absolute top-6 right-6 p-2 bg-gray-800/80 hover:bg-red-600/80 text-gray-400 hover:text-white rounded-full transition-all duration-300 z-10"
                 >
-                  <X className="w-8 h-8" />
-                </button>
+                  <X className="w-6 h-6" />
+                </motion.button>
 
-                {/* LOCAL REACT GAMES */}
-                {activeGame === 'tictactoe' && <TicTacToe />}
-                {activeGame === 'snake' && <SnakeGame />}
-                {activeGame === 'rps' && <RockPaperScissors />}
-                {activeGame === 'reaction' && <ReactionTest />}
-                {activeGame === 'numberpuzzle' && <NumberPuzzleGame />}
-                {activeGame === 'space-shooter' && <SpaceShooterGame />}
+                {/* Game Header */}
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="mb-6"
+                >
+                  {(() => {
+                    const game = games.find(g => g.id === activeGame);
+                    return game ? (
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className={`p-3 rounded-2xl bg-gradient-to-br ${game.color} text-white text-2xl`}>
+                          {game.icon}
+                        </div>
+                        <div>
+                          <h2 className="text-3xl font-bold text-white">{game.name}</h2>
+                          <p className="text-gray-400">{game.description}</p>
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
+                </motion.div>
+
+                {/* Game Content */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  {activeGame === 'tictactoe' && <TicTacToe />}
+                  {activeGame === 'snake' && <SnakeGame />}
+                  {activeGame === 'rps' && <RockPaperScissors />}
+                  {activeGame === 'reaction' && <ReactionTest />}
+                  {activeGame === 'numberpuzzle' && <NumberPuzzleGame />}
+                  {activeGame === 'space-shooter' && <SpaceShooterGame />}
+                </motion.div>
               </motion.div>
             </motion.div>
           )}
