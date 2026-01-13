@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Mic2, Flame, Rocket, Zap, Sparkles, Palette, Laugh, Menu, X } from 'lucide-react';
+import { Mic2, Flame, Rocket, Zap, Sparkles, Palette, Laugh, Menu, X, MessageCircle, Brain } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -33,6 +33,8 @@ const Navbar = () => {
     { name: 'Arcade', path: '/arcade', icon: Rocket },
     { name: 'Brainlock', path: '/brainlock', icon: Zap },
     { name: 'Admin Jokes', path: '/jokes', icon: Laugh },
+    { name: 'Roast Me', path: '/roast-me', icon: MessageCircle },
+    { name: 'Mood AI', path: '/mood-detector', icon: Brain },
   ];
 
   return (

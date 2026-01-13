@@ -1,33 +1,27 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { GameProvider } from './contexts/GameContext';
+import AnimatedRoutes from './components/AnimatedRoutes';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import Home from './pages/Home';
-import SingWithMe from './pages/SingWithMe';
-import Destiny from './pages/Destiny';
-import Arcade from './pages/Arcade';
-import Brainlock from './pages/Brainlock';
-import Jokes from './pages/Jokes';
+import NotificationSystem from './components/NotificationSystem';
+import FloatingXpDisplay from './components/FloatingXpDisplay';
 
 
 function App() {
   return (
-    <Router basename="/FunTime_project">
-      <div className="min-h-screen bg-gray-950 font-sans text-gray-100 flex flex-col">
-        <Navbar />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/sing-with-me" element={<SingWithMe />} />
-            <Route path="/destiny" element={<Destiny />} />
-            <Route path="/arcade" element={<Arcade />} />
-            <Route path="/brainlock" element={<Brainlock />} />
-            <Route path="/jokes" element={<Jokes />} />
-            <Route path="*" element={<Home />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <GameProvider>
+      <Router basename="/FunTime_project">
+        <div className="min-h-screen bg-gray-950 font-sans text-gray-100 flex flex-col">
+          <Navbar />
+          <main className="flex-grow">
+            <AnimatedRoutes />
+          </main>
+          <Footer />
+          <NotificationSystem />
+          <FloatingXpDisplay />
+        </div>
+      </Router>
+    </GameProvider>
   );
 }
 

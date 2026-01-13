@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mic2, Flame, Rocket, Zap, Laugh } from 'lucide-react';
+import { Mic2, Flame, Rocket, Zap, Laugh, MessageCircle, Trophy, Brain } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Home = () => {
@@ -39,6 +39,27 @@ const Home = () => {
       icon: Laugh,
       path: "/jokes",
       color: "from-yellow-500 to-orange-500"
+    },
+    {
+      title: "Roast Me",
+      description: "AI roasts, compliments, and motivation on demand.",
+      icon: MessageCircle,
+      path: "/roast-me",
+      color: "from-red-500 to-pink-500"
+    },
+    {
+      title: "Mood Detective",
+      description: "AI analyzes your mood and suggests activities.",
+      icon: Brain,
+      path: "/mood-detector",
+      color: "from-cyan-500 to-purple-500"
+    },
+    {
+      title: "Profile",
+      description: "Track your progress and unlock achievements.",
+      icon: Trophy,
+      path: "/profile",
+      color: "from-indigo-500 to-purple-500"
     }
   ];
 
@@ -77,16 +98,22 @@ const Home = () => {
             className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-6 sm:mt-8"
           >
             <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
-              🎮 8+ Games
+              🎮 12+ Games
             </div>
             <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
               🎤 Karaoke Studio
+            </div>
+            <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
+              🧠 AI Mood Detection
             </div>
             <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
               🔮 AI Quizzes
             </div>
             <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
               😂 AI Jokes
+            </div>
+            <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
+              🔥 AI Roasts
             </div>
             <div className="bg-gray-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-300 border border-gray-700">
               ✨ No Login
@@ -101,25 +128,68 @@ const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 + 0.4 }}
-              whileHover={{ y: -5 }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               <Link to={feature.path}>
-                <div className={`h-full p-5 sm:p-6 lg:p-8 rounded-2xl bg-gradient-to-br ${feature.color} hover:scale-105 transition-all duration-300 shadow-2xl cursor-pointer group relative overflow-hidden`}>
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 bg-white/10 transform rotate-45 translate-x-1/2 translate-y-1/2 w-32 h-32"></div>
+                <div className={`h-full p-5 sm:p-6 lg:p-8 rounded-2xl bg-gradient-to-br ${feature.color} hover:shadow-2xl transition-all duration-500 cursor-pointer group relative overflow-hidden`}>
+                  {/* Animated Background Pattern */}
+                  <motion.div 
+                    className="absolute inset-0 bg-white/10 transform rotate-45 translate-x-1/2 translate-y-1/2 w-32 h-32"
+                    whileHover={{ rotate: 90, scale: 1.5 }}
+                    transition={{ duration: 0.5 }}
+                  />
+                  
+                  {/* Floating Particles */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    {[...Array(6)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute w-1 h-1 bg-white rounded-full"
+                        style={{
+                          left: `${20 + i * 15}%`,
+                          top: `${30 + (i % 2) * 40}%`,
+                        }}
+                        animate={{
+                          y: [-10, -30, -10],
+                          opacity: [0, 1, 0],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          delay: i * 0.2,
+                        }}
+                      />
+                    ))}
+                  </div>
                   
                   <div className="relative z-10">
-                    <feature.icon className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mb-3 sm:mb-4 text-white group-hover:rotate-12 transition-transform duration-300 drop-shadow-lg" />
+                    <motion.div
+                      whileHover={{ rotate: 12, scale: 1.1 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <feature.icon className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mb-3 sm:mb-4 text-white drop-shadow-lg" />
+                    </motion.div>
                     <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">{feature.title}</h2>
                     <p className="text-white/90 text-sm sm:text-base lg:text-lg">{feature.description}</p>
                   
-                    {/* Hover indicator */}
-                    <div className="mt-4 text-white/80 text-sm font-medium flex items-center">
+                    {/* Enhanced Hover indicator */}
+                    <motion.div 
+                      className="mt-4 text-white/80 text-sm font-medium flex items-center"
+                      whileHover={{ x: 5 }}
+                    >
                       Explore 
-                      <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <motion.svg 
+                        className="w-4 h-4 ml-1" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                        whileHover={{ x: 3 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                      </motion.svg>
+                    </motion.div>
                   </div>
                 </div>
               </Link>

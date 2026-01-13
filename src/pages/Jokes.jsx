@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Laugh, RefreshCw, Copy, Sparkles, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useGame } from '../contexts/GameContext';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Jokes = () => {
+  const { addXp, updateStats } = useGame();
   const [currentJoke, setCurrentJoke] = useState('');
   const [jokeHistory, setJokeHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -145,6 +147,10 @@ const Jokes = () => {
       if (aiJoke && aiJoke.trim() && !isVeryShort(aiJoke)) {
         setCurrentJoke(aiJoke);
         setJokeHistory(prev => [aiJoke, ...prev.slice(0, 5)]);
+        
+        // Award XP for generating a joke
+        addXp(8);
+        updateStats('jokesHeard');
       } else {
         setCurrentJoke("Sorry, couldn't generate a unique joke right now. Please try again!");
       }

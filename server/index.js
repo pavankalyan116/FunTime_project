@@ -102,6 +102,182 @@ const rememberJoke = (t) => {
 /* =====================
    ROUTES
 ===================== */
+
+// New AI Personality Generator endpoint
+app.post("/api/personality", async (req, res) => {
+  const { name, mood, mode } = req.body;
+  
+  if (!name || !mode) {
+    return res.status(400).json({ error: "Name and mode are required" });
+  }
+
+  if (MOCK_MODE) {
+    console.log("Mocking personality response...");
+    const mockResponses = {
+      roast: [
+        `Oh ${name}, you're like a software update - nobody wants you, but you keep showing up anyway! 😂`,
+        `Hey ${name}, I'd roast you but my AI ethics won't let me burn trash! 🔥`,
+        `Listen ${name}, you're proof that even AI makes mistakes sometimes! 🤖`,
+        `${name}, you're like a broken keyboard - you're just not my type! ⌨️`
+      ],
+      compliment: [
+        `${name}, you're like perfectly optimized code - efficient, elegant, and absolutely brilliant! ✨`,
+        `Hey ${name}, if you were a programming language, you'd be Python - simple, powerful, and loved by everyone! 🐍`,
+        `${name}, you're the human equivalent of a successful deployment - everything just works better with you around! 🚀`,
+        `Listen ${name}, you're like a well-documented API - clear, helpful, and exactly what everyone needs! 📚`
+      ],
+      motivation: [
+        `${name}, you're not just debugging life - you're refactoring it into something amazing! 💪`,
+        `Hey ${name}, every expert was once a beginner. You're not stuck, you're just loading! ⏳`,
+        `${name}, your potential is like infinite recursion - it just keeps going and going! 🔄`,
+        `Remember ${name}, even the best developers get bugs. The difference is they keep coding! 🐛➡️✨`
+      ]
+    };
+    
+    const responses = mockResponses[mode] || mockResponses.roast;
+    const response = responses[Math.floor(Math.random() * responses.length)];
+    return res.json({ content: response });
+  }
+
+  try {
+    let systemPrompt = "";
+    let temperature = 0.8;
+    
+    switch(mode) {
+      case 'roast':
+        systemPrompt = `You are a witty AI comedian who creates playful, light-hearted roasts. Your roasts should be:
+        - Clever and creative, not mean-spirited
+        - Tech/internet culture themed when possible
+        - Include emojis for fun
+        - Never actually hurtful or offensive
+        - Maximum 2 sentences
+        - Always end on a playful note
+        ${mood ? `Consider their mood: ${mood}` : ''}`;
+        temperature = 0.9;
+        break;
+        
+      case 'compliment':
+        systemPrompt = `You are an uplifting AI that gives genuine, creative compliments. Your compliments should be:
+        - Unique and personalized
+        - Tech/programming themed when possible
+        - Genuinely uplifting and positive
+        - Include emojis for warmth
+        - Maximum 2 sentences
+        - Make them feel special and valued
+        ${mood ? `Consider their mood: ${mood}` : ''}`;
+        temperature = 0.7;
+        break;
+        
+      case 'motivation':
+        systemPrompt = `You are an inspiring AI coach who provides powerful motivation. Your messages should be:
+        - Energizing and empowering
+        - Include actionable mindset shifts
+        - Tech/life metaphors when possible
+        - Include emojis for energy
+        - Maximum 2 sentences
+        - Focus on growth and potential
+        ${mood ? `Consider their mood: ${mood}` : ''}`;
+        temperature = 0.8;
+        break;
+    }
+
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Create a ${mode} for someone named ${name}${mood ? ` who is feeling ${mood}` : ''}.` }
+      ],
+      model: "llama-3.3-70b-versatile",
+      temperature,
+      max_tokens: 150,
+      top_p: 0.9
+    });
+
+    const content = completion.choices[0]?.message?.content || "Something went wrong, but you're still awesome!";
+    res.json({ content });
+    
+  } catch (err) {
+    console.error("❌ Personality generation error:", err);
+    res.status(500).json({ error: err.message || "Personality generation failed" });
+  }
+});
+
+// Enhanced mood detection endpoint
+app.post("/api/mood-detect", async (req, res) => {
+  const { text } = req.body;
+  
+  if (!text) {
+    return res.status(400).json({ error: "Text is required" });
+  }
+
+  if (MOCK_MODE) {
+    console.log("Mocking mood detection...");
+    const moods = ['happy', 'excited', 'tired', 'stressed', 'confident', 'bored', 'creative', 'focused'];
+    const mood = moods[Math.floor(Math.random() * moods.length)];
+    const suggestions = {
+      happy: { activity: 'Share your joy with others!', game: 'arcade', color: 'green' },
+      excited: { activity: 'Channel that energy into something fun!', game: 'arcade', color: 'orange' },
+      tired: { activity: 'Take it easy with something relaxing', game: 'sing-with-me', color: 'blue' },
+      stressed: { activity: 'Let off some steam!', game: 'roast-me', color: 'red' },
+      confident: { activity: 'Challenge yourself!', game: 'brainlock', color: 'purple' },
+      bored: { activity: 'Discover something new!', game: 'destiny', color: 'pink' },
+      creative: { activity: 'Express yourself!', game: 'sing-with-me', color: 'cyan' },
+      focused: { activity: 'Put that focus to good use!', game: 'brainlock', color: 'indigo' }
+    };
+    
+    return res.json({ 
+      mood, 
+      confidence: 0.85,
+      suggestion: suggestions[mood]
+    });
+  }
+
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert mood analyzer. Analyze the user's text and respond with ONLY a JSON object in this exact format:
+          {
+            "mood": "primary_emotion",
+            "confidence": 0.85,
+            "suggestion": {
+              "activity": "brief suggestion text",
+              "game": "recommended_game_page",
+              "color": "mood_color"
+            }
+          }
+          
+          Available games: "arcade", "brainlock", "destiny", "sing-with-me", "roast-me", "jokes"
+          Available colors: "red", "blue", "green", "yellow", "purple", "pink", "orange", "cyan", "indigo"
+          
+          Keep suggestions brief and encouraging.` 
+        },
+        { role: "user", content: `Analyze this text for mood: "${text}"` }
+      ],
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.3,
+      max_tokens: 200
+    });
+
+    const content = completion.choices[0]?.message?.content || '{}';
+    try {
+      const result = JSON.parse(content);
+      res.json(result);
+    } catch {
+      // Fallback if JSON parsing fails
+      res.json({ 
+        mood: 'neutral', 
+        confidence: 0.5,
+        suggestion: { activity: 'Explore something fun!', game: 'arcade', color: 'blue' }
+      });
+    }
+    
+  } catch (err) {
+    console.error("❌ Mood detection error:", err);
+    res.status(500).json({ error: err.message || "Mood detection failed" });
+  }
+});
+
 app.post("/api/chat", async (req, res) => {
   const { messages, model = "llama-3.3-70b-versatile" } = req.body;
   if (!messages || !Array.isArray(messages)) {

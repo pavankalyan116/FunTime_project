@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gamepad2, X, Trophy, Star, Zap, Target, Timer, Sparkles } from 'lucide-react';
+import { useGame } from '../contexts/GameContext';
+import { TicTacToeGame, MemoryCardGame, ClickSpeedGame } from '../components/ArcadeGames';
 
 const Arcade = () => {
+  const { addXp, updateStats } = useGame();
   const [activeGame, setActiveGame] = useState(null);
   const [gameStats, setGameStats] = useState({
     totalGamesPlayed: 0,
@@ -19,6 +22,24 @@ const Arcade = () => {
       icon: '⭕',
       difficulty: 'Medium',
       category: 'Strategy'
+    },
+    { 
+      id: 'memory', 
+      name: 'Memory Cards', 
+      description: 'Match pairs to win', 
+      color: 'from-purple-500 to-indigo-500',
+      icon: '🧠',
+      difficulty: 'Easy',
+      category: 'Memory'
+    },
+    { 
+      id: 'clickspeed', 
+      name: 'Click Speed', 
+      description: 'Click targets as fast as you can', 
+      color: 'from-orange-500 to-red-500',
+      icon: '⚡',
+      difficulty: 'Easy',
+      category: 'Reflex'
     },
     { 
       id: 'snake', 
@@ -55,15 +76,6 @@ const Arcade = () => {
       icon: '🧩',
       difficulty: 'Hard',
       category: 'Puzzle'
-    },
-    { 
-      id: 'space-shooter', 
-      name: 'Space Shooter', 
-      description: 'Defend against aliens', 
-      color: 'from-pink-500 to-rose-500',
-      icon: '🚀',
-      difficulty: 'Medium',
-      category: 'Action'
     }
   ];
 
@@ -238,7 +250,7 @@ const Arcade = () => {
 
               {/* Content */}
               <div className="relative z-10">
-                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between mb-4">
                   <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
                     {game.icon}
                   </div>
@@ -345,12 +357,13 @@ const Arcade = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  {activeGame === 'tictactoe' && <TicTacToe />}
+                  {activeGame === 'tictactoe' && <TicTacToeGame />}
+                  {activeGame === 'memory' && <MemoryCardGame />}
+                  {activeGame === 'clickspeed' && <ClickSpeedGame />}
                   {activeGame === 'snake' && <SnakeGame />}
                   {activeGame === 'rps' && <RockPaperScissors />}
                   {activeGame === 'reaction' && <ReactionTest />}
                   {activeGame === 'numberpuzzle' && <NumberPuzzleGame />}
-                  {activeGame === 'space-shooter' && <SpaceShooterGame />}
                 </motion.div>
               </motion.div>
             </motion.div>
