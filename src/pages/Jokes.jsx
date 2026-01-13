@@ -3,10 +3,14 @@ import { Laugh, RefreshCw, Copy, Sparkles, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../contexts/GameContext';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
 
 const Jokes = () => {
   const { addXp, updateStats } = useGame();
+  
+  // Debug: Log the API URL being used
+  console.log('🔗 Jokes using API_URL:', API_URL);
+  
   const [currentJoke, setCurrentJoke] = useState('');
   const [jokeHistory, setJokeHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);

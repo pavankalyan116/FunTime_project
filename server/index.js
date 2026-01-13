@@ -103,6 +103,16 @@ const rememberJoke = (t) => {
    ROUTES
 ===================== */
 
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  res.json({ 
+    status: "OK", 
+    timestamp: new Date().toISOString(),
+    mockMode: MOCK_MODE,
+    hasGroqKey: !!GROQ_API_KEY
+  });
+});
+
 // New AI Personality Generator endpoint
 app.post("/api/personality", async (req, res) => {
   const { name, mood, mode } = req.body;
@@ -456,46 +466,94 @@ app.post("/api/chat", async (req, res) => {
 });
 
 app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
+  console.log("📁 Transcribe endpoint hit");
+  
   if (!req.file) {
+    console.log("❌ No file uploaded");
     return res.status(400).json({ error: "No audio file uploaded" });
   }
 
+  console.log("📄 File received:", {
+    filename: req.file.originalname,
+    size: req.file.size,
+    mimetype: req.file.mimetype
+  });
+
   if (MOCK_MODE) {
-     console.log("Mocking transcription...");
+     console.log("🎭 Running in MOCK MODE - returning mock transcription");
      return res.json({
          segments: [
-             { start: 0, end: 5, text: "This is a mock transcription." },
-             { start: 5, end: 10, text: "Because the API key is missing." },
-             { start: 10, end: 15, text: "Please add your Groq API key." }
+             { start: 0, end: 5, text: "🎵 This is a mock transcription for your audio" },
+             { start: 5, end: 10, text: "🎤 The lyrics feature requires a Groq API key" },
+             { start: 10, end: 15, text: "🎶 But you can still enjoy the karaoke experience!" },
+             { start: 15, end: 20, text: "✨ Upload your favorite songs and sing along!" }
          ]
      });
   }
 
   try {
+    console.log("🔄 Processing audio file for transcription...");
+    
     const fileBuffer = fs.readFileSync(req.file.path);
+    console.log("📊 File buffer size:", fileBuffer.length);
+    
     const fileForGroq = await toFile(fileBuffer, req.file.originalname);
+    console.log("📤 Sending to Groq API...");
+    
     const transcription = await groq.audio.transcriptions.create({
       file: fileForGroq,
       model: "whisper-large-v3",
-      response_format: "verbose_json",
-      timestamp_granularity: "word"
+      response_format: "verbose_json"
     });
 
+    console.log("✅ Transcription successful! Segments:", transcription.segments?.length || 0);
+    
     res.json({
       segments: transcription.segments || [],
       words: transcription.words || []
     });
+    
   } catch (err) {
-    console.error("❌ Transcription error:", err);
-    res.status(500).json({ error: err.message || "Transcription failed" });
+    console.error("❌ Transcription error:", err.message);
+    console.error("🔍 Error details:", {
+      name: err.name,
+      code: err.code,
+      status: err.status
+    });
+    
+    // Always return a successful response with fallback data
+    console.log("🔄 Returning fallback lyrics instead of error");
+    
+    const fallbackSegments = [
+      { start: 0, end: 5, text: "🎵 Couldn't generate lyrics from this audio file" },
+      { start: 5, end: 10, text: "🎤 The audio might be too complex or unclear" },
+      { start: 10, end: 15, text: "🎶 Try a clearer recording or different file format" },
+      { start: 15, end: 20, text: "✨ You can still sing along to the music!" }
+    ];
+    
+    // Return 200 OK with fallback data instead of 500 error
+    res.status(200).json({
+      segments: fallbackSegments,
+      words: [],
+      fallback: true,
+      originalError: err.message
+    });
+    
   } finally {
     // Cleanup uploaded file
     if (req.file && req.file.path) {
-      fs.unlinkSync(req.file.path);
+      try {
+        fs.unlinkSync(req.file.path);
+        console.log("🗑️ Cleaned up uploaded file");
+      } catch (cleanupErr) {
+        console.error("⚠️ Error cleaning up file:", cleanupErr.message);
+      }
     }
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 MOCK_MODE: ${MOCK_MODE ? 'ON' : 'OFF'}`);
+  console.log(`🔑 GROQ_API_KEY: ${GROQ_API_KEY ? 'SET' : 'NOT SET'}`);
 });
