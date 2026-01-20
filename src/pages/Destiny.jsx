@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Stars, Sparkles, Moon, Sun } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import LanguageSelector from '../components/LanguageSelector';
+import LanguageDemo from '../components/LanguageDemo';
+import { getText } from '../utils/languageText';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Destiny = () => {
   const [activeTab, setActiveTab] = useState('flames');
+  const { language } = useLanguage();
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-950 via-purple-900/20 to-gray-950 p-3 sm:p-4 md:p-6 lg:p-8 relative overflow-hidden">
@@ -26,9 +31,19 @@ const Destiny = () => {
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent mb-3 sm:mb-4">
             Discover Your Destiny
           </h1>
-          <p className="text-gray-300 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto px-4">
+          <p className="text-gray-300 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto px-4 mb-6">
             Unveil the mysteries of your future with ancient wisdom and cosmic guidance
           </p>
+          
+          {/* Language Selector */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex justify-center"
+          >
+            <LanguageSelector />
+          </motion.div>
         </motion.div>
 
         {/* Tab Navigation */}
@@ -74,6 +89,7 @@ const FlamesGame = () => {
   const [name2, setName2] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { getLanguagePrompt } = useLanguage();
 
   const calculateFlames = async () => {
     if (!name1 || !name2) return;
@@ -121,13 +137,16 @@ const FlamesGame = () => {
     // Generate AI dedication
     let dedication = "A match made in heaven!";
     try {
+        const basePrompt = `Write a short, romantic, or funny one-line dedication for a couple named ${name1} and ${name2} who got the result "${outcome}" in the FLAMES game. Max 20 words.`;
+        const languageAwarePrompt = getLanguagePrompt(basePrompt, 'dedication');
+        
         const response = await fetch(`${API_URL}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 messages: [{
                     role: "user",
-                    content: `Write a short, romantic, or funny one-line dedication for a couple named ${name1} and ${name2} who got the result "${outcome}" in the FLAMES game. Max 20 words.`
+                    content: languageAwarePrompt
                 }]
             })
         });
@@ -279,6 +298,7 @@ const AstrologyReader = () => {
   });
   const [reading, setReading] = useState('');
   const [loading, setLoading] = useState(false);
+  const { getLanguagePrompt, language } = useLanguage();
 
   // Vedic Rashis (Moon Signs) with Sanskrit names
   const vedic_rashis = [
@@ -413,13 +433,15 @@ const AstrologyReader = () => {
       
       Write in traditional Vedic style with Sanskrit terms, making it detailed and authentic (300-400 words).`;
 
+    const languageAwarePrompt = getLanguagePrompt(vedicPrompt, 'astrology');
+
     try {
 
       const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: "user", content: vedicPrompt }],
+          messages: [{ role: "user", content: languageAwarePrompt }],
           temperature: 0.8,
           top_p: 0.9
         })
@@ -458,9 +480,32 @@ const AstrologyReader = () => {
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent mb-3 sm:mb-4">
           🕉️ Vedic Jyotish Consultation
         </h2>
-        <p className="text-gray-400 text-xs sm:text-sm md:text-base max-w-2xl mx-auto leading-relaxed px-4">
+        <p className="text-gray-400 text-xs sm:text-sm md:text-base max-w-2xl mx-auto leading-relaxed px-4 mb-4">
           Ancient wisdom of Bharatiya Jyotish Shastra • Cosmic guidance through Rashi, Nakshatra & Planetary influences
         </p>
+        
+        {/* Language Selector for Astrology Results */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex justify-center mb-4"
+        >
+          <div className="bg-purple-900/30 rounded-full p-2">
+            <LanguageSelector />
+          </div>
+        </motion.div>
+        
+        {/* Language Preview */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="max-w-md mx-auto mb-4"
+        >
+          <LanguageDemo category="astrology" />
+        </motion.div>
+        
         <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-3 sm:mt-4 text-xs text-purple-300">
           <span className="px-2 sm:px-3 py-1 bg-purple-900/30 rounded-full">🌙 Chandra Rashi</span>
           <span className="px-2 sm:px-3 py-1 bg-purple-900/30 rounded-full">⭐ Janma Nakshatra</span>
@@ -515,15 +560,15 @@ const AstrologyReader = () => {
         >
           <h3 className="text-purple-300 font-semibold mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
             <Stars className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            {mode === 'couple' ? 'प्रथम व्यक्ति (First Person)' : 'आपकी जानकारी (Your Details)'}
+            {mode === 'couple' ? getText('yourDetails', language) : getText('yourDetails', language)}
           </h3>
           
           <div className="space-y-3 sm:space-y-4">
             <div>
-              <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">नाम (Name)</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('name', language)}</label>
               <input
                 type="text"
-                placeholder="Enter your name"
+                placeholder={getText('namePlaceholderAstro', language)}
                 className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-base sm:text-lg backdrop-blur-sm"
                 value={data.name1}
                 onChange={e => setData({...data, name1: e.target.value})}
@@ -531,13 +576,13 @@ const AstrologyReader = () => {
             </div>
             
             <div>
-              <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">चन्द्र राशि (Chandra Rashi - Moon Sign)</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('moonSign', language)}</label>
               <select
                 className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                 value={data.rashi1}
                 onChange={e => setData({...data, rashi1: e.target.value})}
               >
-                <option value="">Select your Rashi</option>
+                <option value="">{getText('selectRashi', language)}</option>
                 {vedic_rashis.map((rashi, index) => (
                   <option key={index} value={rashi.sanskrit}>
                     {rashi.symbol} {rashi.sanskrit} ({rashi.english}) - {rashi.lord}
@@ -547,13 +592,13 @@ const AstrologyReader = () => {
             </div>
 
             <div>
-              <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म नक्षत्र (Janma Nakshatra - Birth Star)</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('birthStar', language)}</label>
               <select
                 className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                 value={data.nakshatra1}
                 onChange={e => setData({...data, nakshatra1: e.target.value})}
               >
-                <option value="">Select your Nakshatra</option>
+                <option value="">{getText('selectNakshatra', language)}</option>
                 {nakshatras.map((nakshatra, index) => (
                   <option key={index} value={nakshatra.name}>
                     {nakshatra.name} - {nakshatra.deity} ({nakshatra.nature})
@@ -564,7 +609,7 @@ const AstrologyReader = () => {
             
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <div>
-                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म तिथि (Birth Date)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('birthDate', language)}</label>
                 <input
                     type="date"
                     className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-2 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
@@ -574,7 +619,7 @@ const AstrologyReader = () => {
               </div>
               
               <div>
-                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म समय (Birth Time)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('birthTime', language)}</label>
                 <input
                     type="time"
                     className="w-full bg-gray-800/50 border border-purple-500/30 rounded-xl px-2 sm:px-4 py-2 sm:py-3 focus:border-purple-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
@@ -596,15 +641,15 @@ const AstrologyReader = () => {
            >
             <h3 className="text-pink-300 font-semibold mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
               <Heart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              द्वितीय व्यक्ति (Partner's Details)
+              {getText('partnerDetails', language)}
             </h3>
             
             <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">साथी का नाम (Partner's Name)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('partnerName', language)}</label>
                 <input
                   type="text"
-                  placeholder="Enter partner's name"
+                  placeholder={getText('partnerNamePlaceholder', language)}
                   className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-base sm:text-lg backdrop-blur-sm"
                   value={data.name2}
                   onChange={e => setData({...data, name2: e.target.value})}
@@ -612,13 +657,13 @@ const AstrologyReader = () => {
               </div>
               
               <div>
-                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">चन्द्र राशि (Chandra Rashi)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('moonSign', language)}</label>
                 <select
                   className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                   value={data.rashi2}
                   onChange={e => setData({...data, rashi2: e.target.value})}
                 >
-                  <option value="">Select partner's Rashi</option>
+                  <option value="">{getText('selectPartnerRashi', language)}</option>
                   {vedic_rashis.map((rashi, index) => (
                     <option key={index} value={rashi.sanskrit}>
                       {rashi.symbol} {rashi.sanskrit} ({rashi.english}) - {rashi.lord}
@@ -628,13 +673,13 @@ const AstrologyReader = () => {
               </div>
 
               <div>
-                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म नक्षत्र (Janma Nakshatra)</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('birthStar', language)}</label>
                 <select
                   className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-3 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
                   value={data.nakshatra2}
                   onChange={e => setData({...data, nakshatra2: e.target.value})}
                 >
-                  <option value="">Select partner's Nakshatra</option>
+                  <option value="">{getText('selectPartnerNakshatra', language)}</option>
                   {nakshatras.map((nakshatra, index) => (
                     <option key={index} value={nakshatra.name}>
                       {nakshatra.name} - {nakshatra.deity} ({nakshatra.nature})
@@ -645,7 +690,7 @@ const AstrologyReader = () => {
               
               <div className="grid grid-cols-2 gap-2 sm:gap-4">
                 <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म तिथि (Birth Date)</label>
+                  <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('birthDate', language)}</label>
                   <input
                       type="date"
                       className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-2 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
@@ -655,7 +700,7 @@ const AstrologyReader = () => {
                 </div>
                 
                 <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">जन्म समय (Birth Time)</label>
+                  <label className="text-xs sm:text-sm font-medium text-gray-300 mb-2 block">{getText('birthTime', language)}</label>
                   <input
                       type="time"
                       className="w-full bg-gray-800/50 border border-pink-500/30 rounded-xl px-2 sm:px-4 py-2 sm:py-3 focus:border-pink-400 focus:outline-none transition-all text-sm sm:text-base backdrop-blur-sm"
@@ -692,12 +737,12 @@ const AstrologyReader = () => {
               >
                 🕉️
               </motion.div>
-              <span className="text-sm sm:text-base">ज्योतिष परामर्श... (Consulting the Stars)</span>
+              <span className="text-sm sm:text-base">{getText('consulting', language)}</span>
             </div>
           ) : (
             <div className="flex items-center justify-center">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">{mode === 'single' ? 'भविष्य जानें (Know Your Destiny)' : 'मिलान करें (Check Compatibility)'}</span>
+              <span className="text-sm sm:text-base">{mode === 'single' ? getText('knowDestiny', language) : getText('checkCompatibility', language)}</span>
             </div>
           )}
         </motion.button>
@@ -705,7 +750,7 @@ const AstrologyReader = () => {
         {/* Validation message */}
         {(!data.name1 || !data.rashi1) && (
           <p className="text-xs sm:text-sm text-gray-400 mt-2 px-4">
-            कृपया नाम और राशि भरें (Please fill name and rashi)
+            {getText('fillRequired', language)}
           </p>
         )}
       </motion.div>

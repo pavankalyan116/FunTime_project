@@ -3,11 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Sparkles, ArrowRight, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useGame } from '../contexts/GameContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import LanguageSelector from '../components/LanguageSelector';
+import LanguageDemo from '../components/LanguageDemo';
 import { MoodAnimations } from '../components/LottieAnimations';
 import { secureApiCall, API_ENDPOINTS, rateLimiter, RATE_LIMITS } from '../config/api.js';
 
 const MoodDetector = () => {
   const { addXp, updateStats } = useGame();
+  const { getLanguagePrompt } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [moodResult, setMoodResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -20,10 +24,14 @@ const MoodDetector = () => {
     setShowResult(false);
     
     try {
+      const basePrompt = `Analyze the mood and emotions in this text: "${inputText.trim()}". Provide a mood analysis with suggestions for activities.`;
+      const languageAwarePrompt = getLanguagePrompt(basePrompt, 'mood');
+      
       const response = await secureApiCall(API_ENDPOINTS.MOOD_DETECT, {
         method: 'POST',
         body: JSON.stringify({
-          text: inputText.trim()
+          text: inputText.trim(),
+          prompt: languageAwarePrompt
         })
       });
 
@@ -131,9 +139,29 @@ const MoodDetector = () => {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
             AI Mood Detective
           </h1>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-6">
             Tell me how you're feeling, and I'll analyze your mood and suggest the perfect activity for you!
           </p>
+          
+          {/* Language Selector */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex justify-center mb-4"
+          >
+            <LanguageSelector />
+          </motion.div>
+          
+          {/* Language Preview */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="max-w-md mx-auto"
+          >
+            <LanguageDemo category="compliments" />
+          </motion.div>
         </motion.div>
 
         {/* Input Section */}

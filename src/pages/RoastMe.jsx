@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Heart, Zap, Share2, RefreshCw, Sparkles } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import LanguageSelector from '../components/LanguageSelector';
+import LanguageDemo from '../components/LanguageDemo';
 import { LoadingAnimation, FireAnimation, HeartAnimation, LightningAnimation } from '../components/LottieAnimations';
 import { secureApiCall, API_ENDPOINTS, rateLimiter, RATE_LIMITS } from '../config/api.js';
 
 const RoastMe = () => {
   const { addXp, updateStats, updateStreak } = useGame();
+  const { getLanguagePrompt, language } = useLanguage();
   const [name, setName] = useState('');
   const [mood, setMood] = useState('');
   const [mode, setMode] = useState('roast'); // 'roast', 'compliment', 'motivation'
@@ -36,12 +40,17 @@ const RoastMe = () => {
     updateStreak();
     
     try {
+      const basePrompt = `Generate a ${mode} for someone named ${name.trim()}${mood.trim() ? ` who is feeling ${mood.trim()}` : ''}. Make it creative, witty, and appropriate for the ${mode} style.`;
+      
+      const languageAwarePrompt = getLanguagePrompt(basePrompt, mode);
+      
       const response = await secureApiCall(API_ENDPOINTS.PERSONALITY, {
         method: 'POST',
         body: JSON.stringify({
           name: name.trim(),
           mood: mood.trim() || null,
-          mode
+          mode,
+          prompt: languageAwarePrompt
         })
       });
 
@@ -74,30 +83,72 @@ const RoastMe = () => {
       
     } catch (error) {
       console.error('Error generating response:', error.message);
-      // Fallback to mock responses if API fails
+      // Fallback to mock responses if API fails - use language-aware responses
       const mockResponses = {
-        roast: [
-          `Oh ${name}, you're like a software update - nobody wants you, but you keep showing up anyway! 😂`,
-          `Hey ${name}, I'd roast you but my AI ethics won't let me burn trash! 🔥`,
-          `Listen ${name}, you're proof that even AI makes mistakes sometimes! 🤖`,
-          `${name}, you're like a broken keyboard - you're just not my type! ⌨️`
-        ],
-        compliment: [
-          `${name}, you're like perfectly optimized code - efficient, elegant, and absolutely brilliant! ✨`,
-          `Hey ${name}, if you were a programming language, you'd be Python - simple, powerful, and loved by everyone! 🐍`,
-          `${name}, you're the human equivalent of a successful deployment - everything just works better with you around! 🚀`,
-          `Listen ${name}, you're like a well-documented API - clear, helpful, and exactly what everyone needs! 📚`
-        ],
-        motivation: [
-          `${name}, you're not just debugging life - you're refactoring it into something amazing! 💪`,
-          `Hey ${name}, every expert was once a beginner. You're not stuck, you're just loading! ⏳`,
-          `${name}, your potential is like infinite recursion - it just keeps going and going! 🔄`,
-          `Remember ${name}, even the best developers get bugs. The difference is they keep coding! 🐛➡️✨`
-        ]
+        english: {
+          roast: [
+            `Oh ${name}, you're like a software update - nobody wants you, but you keep showing up anyway! 😂`,
+            `Hey ${name}, I'd roast you but my AI ethics won't let me burn trash! 🔥`,
+            `Listen ${name}, you're proof that even AI makes mistakes sometimes! 🤖`,
+            `${name}, you're like a broken keyboard - you're just not my type! ⌨️`
+          ],
+          compliment: [
+            `${name}, you're like perfectly optimized code - efficient, elegant, and absolutely brilliant! ✨`,
+            `Hey ${name}, if you were a programming language, you'd be Python - simple, powerful, and loved by everyone! 🐍`,
+            `${name}, you're the human equivalent of a successful deployment - everything just works better with you around! 🚀`,
+            `Listen ${name}, you're like a well-documented API - clear, helpful, and exactly what everyone needs! 📚`
+          ],
+          motivation: [
+            `${name}, you're not just debugging life - you're refactoring it into something amazing! 💪`,
+            `Hey ${name}, every expert was once a beginner. You're not stuck, you're just loading! ⏳`,
+            `${name}, your potential is like infinite recursion - it just keeps going and going! 🔄`,
+            `Remember ${name}, even the best developers get bugs. The difference is they keep coding! 🐛➡️✨`
+          ]
+        },
+        teglish: {
+          roast: [
+            `Arre ${name}, nuvvu software update laga unnav - evaru kavali anukoru, kani nuvvu vasthune untav ra! 😂`,
+            `Hey ${name}, ninnu roast cheyali anipistundi kani na AI ethics trash ni burn cheyyakunda! 🔥`,
+            `Listen ${name}, nuvvu proof that even AI makes mistakes sometimes ra! 🤖`,
+            `${name}, nuvvu broken keyboard laga unnav - you're just not my type ra! ⌨️`
+          ],
+          compliment: [
+            `${name}, nuvvu perfectly optimized code laga unnav - efficient, elegant, and absolutely brilliant ra! ✨`,
+            `Hey ${name}, nuvvu programming language aithe Python avutav - simple, powerful, and andaru love chestaru! 🐍`,
+            `${name}, nuvvu successful deployment ki human equivalent - everything works better with you around! 🚀`,
+            `Listen ${name}, nuvvu well-documented API laga unnav - clear, helpful, and exactly what everyone needs! 📚`
+          ],
+          motivation: [
+            `${name}, nuvvu life ni debug cheyyatam ledu - refactor chesi amazing ga chestunnav! 💪`,
+            `Hey ${name}, every expert was once a beginner. Nuvvu stuck kaadu, just loading! ⏳`,
+            `${name}, mee potential infinite recursion laga undi - it just keeps going and going! 🔄`,
+            `Remember ${name}, best developers ki kuda bugs vastai. Difference enti ante they keep coding! 🐛➡️✨`
+          ]
+        },
+        higlish: {
+          roast: [
+            `Arre ${name}, tu software update jaisa hai - koi nahi chahta, but tu aata rehta hai yaar! 😂`,
+            `Hey ${name}, tujhe roast karna chahta hun but meri AI ethics trash ko burn nahi karne deti! 🔥`,
+            `Listen ${name}, tu proof hai ki even AI makes mistakes sometimes bhai! 🤖`,
+            `${name}, tu broken keyboard jaisa hai - you're just not my type yaar! ⌨️`
+          ],
+          compliment: [
+            `${name}, tu perfectly optimized code jaisa hai - efficient, elegant, aur absolutely brilliant! ✨`,
+            `Hey ${name}, agar tu programming language hota toh Python hota - simple, powerful, aur sabko pasand! 🐍`,
+            `${name}, tu successful deployment ka human equivalent hai - everything works better with you around! 🚀`,
+            `Listen ${name}, tu well-documented API jaisa hai - clear, helpful, aur exactly what everyone needs! 📚`
+          ],
+          motivation: [
+            `${name}, tu life ko debug nahi kar raha - refactor karke amazing bana raha hai! 💪`,
+            `Hey ${name}, every expert was once a beginner. Tu stuck nahi hai, just loading! ⏳`,
+            `${name}, tera potential infinite recursion jaisa hai - it just keeps going and going! 🔄`,
+            `Remember ${name}, best developers ko bhi bugs aate hain. Difference yeh hai ki they keep coding! 🐛➡️✨`
+          ]
+        }
       };
       
-      const responses = mockResponses[mode];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+      const responses = mockResponses[language] || mockResponses.english;
+      const randomResponse = responses[mode][Math.floor(Math.random() * responses[mode].length)];
       
       setResult(randomResponse);
       setIsLoading(false);
@@ -174,9 +225,29 @@ const RoastMe = () => {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
             AI Personality Generator
           </h1>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-6">
             Let our AI analyze your vibe and give you exactly what you need - roasts, compliments, or motivation!
           </p>
+          
+          {/* Language Selector */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex justify-center mb-4"
+          >
+            <LanguageSelector />
+          </motion.div>
+          
+          {/* Language Preview */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="max-w-md mx-auto"
+          >
+            <LanguageDemo category={mode} />
+          </motion.div>
         </motion.div>
 
         {/* Mode Selection */}
