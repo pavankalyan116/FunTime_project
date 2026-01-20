@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "concurrently \"npm run server\" \"npm run client\"",
+    "setup": "node start.cjs",
     "predeploy": "cross-env VITE_API_URL=https://funtime-project.onrender.com npm run build",
     "deploy": "gh-pages -d dist",
     "test": "vitest --run",

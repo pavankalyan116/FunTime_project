@@ -121,7 +121,7 @@ export default function KaraokeLyrics({ segments, words, currentTime }) {
                                     </span>
                                 );
                             })}
-                        {/* Fallback if filtering missed words but segment is active (rare) */}
+                        {/* Display segment text if no words available */}
                          {words.filter(w => w.start >= segment.start - 0.5 && w.end <= segment.end + 0.5).length === 0 && segment.text}
                     </p>
                 ) : (

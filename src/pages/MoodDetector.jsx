@@ -45,32 +45,15 @@ const MoodDetector = () => {
       updateStats('motivationsGot'); // Using this as a general "AI interaction" stat
       
     } catch (error) {
-      console.error('Error detecting mood:', error);
-      // Fallback to mock mood detection
-      const moods = ['happy', 'excited', 'tired', 'stressed', 'confident', 'bored', 'creative', 'focused'];
-      const mood = moods[Math.floor(Math.random() * moods.length)];
-      const suggestions = {
-        happy: { activity: 'Share your joy with others!', game: 'arcade', color: 'green' },
-        excited: { activity: 'Channel that energy into something fun!', game: 'arcade', color: 'orange' },
-        tired: { activity: 'Take it easy with something relaxing', game: 'sing-with-me', color: 'blue' },
-        stressed: { activity: 'Let off some steam!', game: 'roast-me', color: 'red' },
-        confident: { activity: 'Challenge yourself!', game: 'brainlock', color: 'purple' },
-        bored: { activity: 'Discover something new!', game: 'destiny', color: 'pink' },
-        creative: { activity: 'Express yourself!', game: 'sing-with-me', color: 'cyan' },
-        focused: { activity: 'Put that focus to good use!', game: 'brainlock', color: 'indigo' }
-      };
-      
+      // Show error message to user
+      const errorMessage = 'Unable to analyze mood. Please check your internet connection and try again.';
       setMoodResult({ 
-        mood, 
-        confidence: 0.85,
-        suggestion: suggestions[mood]
+        mood: 'error', 
+        confidence: 0,
+        suggestion: { activity: errorMessage, game: 'arcade', color: 'red' }
       });
       setIsAnalyzing(false);
       setShowResult(true);
-      
-      // Still award XP for fallback
-      addXp(12);
-      updateStats('motivationsGot');
     }
   };
 

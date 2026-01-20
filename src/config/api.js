@@ -43,16 +43,14 @@ export const secureApiCall = async (endpoint, options = {}) => {
   try {
     const response = await fetch(url, secureOptions);
     
-    // Log errors without exposing sensitive data
+    // Check response status
     if (!response.ok) {
-      console.error(`API call failed: ${response.status} ${response.statusText}`);
       throw new Error(`API call failed: ${response.status}`);
     }
     
     return response;
   } catch (error) {
-    // Log error without exposing URL or sensitive data
-    console.error('Network error occurred during API call');
+    // Network error occurred
     throw new Error('Network error occurred');
   }
 };

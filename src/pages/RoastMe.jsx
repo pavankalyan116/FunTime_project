@@ -50,7 +50,7 @@ const RoastMe = () => {
           name: name.trim(),
           mood: mood.trim() || null,
           mode,
-          prompt: languageAwarePrompt
+          language
         })
       });
 
@@ -82,99 +82,14 @@ const RoastMe = () => {
       updateStats(statKey);
       
     } catch (error) {
-      console.error('Error generating response:', error.message);
-      // Fallback to mock responses if API fails - use language-aware responses
-      const mockResponses = {
-        english: {
-          roast: [
-            `Oh ${name}, you're like a software update - nobody wants you, but you keep showing up anyway! 😂`,
-            `Hey ${name}, I'd roast you but my AI ethics won't let me burn trash! 🔥`,
-            `Listen ${name}, you're proof that even AI makes mistakes sometimes! 🤖`,
-            `${name}, you're like a broken keyboard - you're just not my type! ⌨️`
-          ],
-          compliment: [
-            `${name}, you're like perfectly optimized code - efficient, elegant, and absolutely brilliant! ✨`,
-            `Hey ${name}, if you were a programming language, you'd be Python - simple, powerful, and loved by everyone! 🐍`,
-            `${name}, you're the human equivalent of a successful deployment - everything just works better with you around! 🚀`,
-            `Listen ${name}, you're like a well-documented API - clear, helpful, and exactly what everyone needs! 📚`
-          ],
-          motivation: [
-            `${name}, you're not just debugging life - you're refactoring it into something amazing! 💪`,
-            `Hey ${name}, every expert was once a beginner. You're not stuck, you're just loading! ⏳`,
-            `${name}, your potential is like infinite recursion - it just keeps going and going! 🔄`,
-            `Remember ${name}, even the best developers get bugs. The difference is they keep coding! 🐛➡️✨`
-          ]
-        },
-        teglish: {
-          roast: [
-            `Arre ${name}, nuvvu software update laga unnav - evaru kavali anukoru, kani nuvvu vasthune untav ra! 😂`,
-            `Hey ${name}, ninnu roast cheyali anipistundi kani na AI ethics trash ni burn cheyyakunda! 🔥`,
-            `Listen ${name}, nuvvu proof that even AI makes mistakes sometimes ra! 🤖`,
-            `${name}, nuvvu broken keyboard laga unnav - you're just not my type ra! ⌨️`
-          ],
-          compliment: [
-            `${name}, nuvvu perfectly optimized code laga unnav - efficient, elegant, and absolutely brilliant ra! ✨`,
-            `Hey ${name}, nuvvu programming language aithe Python avutav - simple, powerful, and andaru love chestaru! 🐍`,
-            `${name}, nuvvu successful deployment ki human equivalent - everything works better with you around! 🚀`,
-            `Listen ${name}, nuvvu well-documented API laga unnav - clear, helpful, and exactly what everyone needs! 📚`
-          ],
-          motivation: [
-            `${name}, nuvvu life ni debug cheyyatam ledu - refactor chesi amazing ga chestunnav! 💪`,
-            `Hey ${name}, every expert was once a beginner. Nuvvu stuck kaadu, just loading! ⏳`,
-            `${name}, mee potential infinite recursion laga undi - it just keeps going and going! 🔄`,
-            `Remember ${name}, best developers ki kuda bugs vastai. Difference enti ante they keep coding! 🐛➡️✨`
-          ]
-        },
-        higlish: {
-          roast: [
-            `Arre ${name}, tu software update jaisa hai - koi nahi chahta, but tu aata rehta hai yaar! 😂`,
-            `Hey ${name}, tujhe roast karna chahta hun but meri AI ethics trash ko burn nahi karne deti! 🔥`,
-            `Listen ${name}, tu proof hai ki even AI makes mistakes sometimes bhai! 🤖`,
-            `${name}, tu broken keyboard jaisa hai - you're just not my type yaar! ⌨️`
-          ],
-          compliment: [
-            `${name}, tu perfectly optimized code jaisa hai - efficient, elegant, aur absolutely brilliant! ✨`,
-            `Hey ${name}, agar tu programming language hota toh Python hota - simple, powerful, aur sabko pasand! 🐍`,
-            `${name}, tu successful deployment ka human equivalent hai - everything works better with you around! 🚀`,
-            `Listen ${name}, tu well-documented API jaisa hai - clear, helpful, aur exactly what everyone needs! 📚`
-          ],
-          motivation: [
-            `${name}, tu life ko debug nahi kar raha - refactor karke amazing bana raha hai! 💪`,
-            `Hey ${name}, every expert was once a beginner. Tu stuck nahi hai, just loading! ⏳`,
-            `${name}, tera potential infinite recursion jaisa hai - it just keeps going and going! 🔄`,
-            `Remember ${name}, best developers ko bhi bugs aate hain. Difference yeh hai ki they keep coding! 🐛➡️✨`
-          ]
-        }
-      };
+      // Show error message to user
+      const errorMessage = error.message.includes('Rate limit') 
+        ? 'Please wait a moment before trying again.'
+        : 'Unable to generate response. Please check your internet connection and try again.';
       
-      const responses = mockResponses[language] || mockResponses.english;
-      const randomResponse = responses[mode][Math.floor(Math.random() * responses[mode].length)];
-      
-      setResult(randomResponse);
+      setCurrentResponse(errorMessage);
+    } finally {
       setIsLoading(false);
-      setShowResult(true);
-      
-      // Still award XP for fallback responses
-      let xpAmount = 10;
-      let statKey = '';
-      
-      switch(mode) {
-        case 'roast':
-          statKey = 'roastsGenerated';
-          xpAmount = 15;
-          break;
-        case 'compliment':
-          statKey = 'complimentsReceived';
-          xpAmount = 12;
-          break;
-        case 'motivation':
-          statKey = 'motivationsGot';
-          xpAmount = 18;
-          break;
-      }
-      
-      addXp(xpAmount);
-      updateStats(statKey);
     }
   };
 
@@ -274,6 +189,19 @@ const RoastMe = () => {
             </motion.button>
           ))}
         </motion.div>
+
+        {/* Content Warning for Roast Mode */}
+        {mode === 'roast' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 mb-6 text-center"
+          >
+            <p className="text-red-400 text-sm">
+              ⚠️ <strong>Adult Content Warning:</strong> Roasts may contain mild profanity and mature humor
+            </p>
+          </motion.div>
+        )}
 
         {/* Input Form */}
         <motion.div 

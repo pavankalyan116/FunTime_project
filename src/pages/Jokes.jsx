@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Laugh, RefreshCw, Copy, Sparkles, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../contexts/GameContext';
@@ -6,68 +6,180 @@ import { useLanguage } from '../contexts/LanguageContext';
 import LanguageSelector from '../components/LanguageSelector';
 import LanguageDemo from '../components/LanguageDemo';
 import { getText } from '../utils/languageText';
-import indianPromptManager, { 
-  processJokeResponse,
-  isJokeDuplicate 
-} from '../utils/indianPromptSystem.js';
-import { secureApiCall, API_ENDPOINTS, rateLimiter, RATE_LIMITS } from '../config/api.js';
+import { secureApiCall, API_ENDPOINTS, rateLimiter, RATE_LIMITS, checkApiHealth } from '../config/api.js';
 
 const Jokes = () => {
   const { addXp, updateStats } = useGame();
-  const { getLanguagePrompt, language } = useLanguage();
+  const { language } = useLanguage();
   
   const [currentJoke, setCurrentJoke] = useState('');
   const [jokeHistory, setJokeHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('family');
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [apiStatus, setApiStatus] = useState('checking'); // 'checking', 'online', 'offline'
+
+  // Auto-adjust font size based on joke length
+  const getJokeFontSize = (joke) => {
+    if (!joke) return 'text-xl sm:text-2xl';
+    
+    const length = joke.length;
+    if (length <= 100) return 'text-2xl sm:text-3xl lg:text-4xl'; // Short jokes - larger font
+    if (length <= 200) return 'text-xl sm:text-2xl lg:text-3xl'; // Medium jokes
+    if (length <= 350) return 'text-lg sm:text-xl lg:text-2xl'; // Long jokes
+    return 'text-base sm:text-lg lg:text-xl'; // Very long jokes - smaller font
+  };
+
+  // Check API status on component mount
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const isHealthy = await checkApiHealth();
+        setApiStatus(isHealthy ? 'online' : 'offline');
+      } catch (error) {
+        setApiStatus('offline');
+      }
+    };
+    
+    checkStatus();
+    // Check status every 30 seconds
+    const interval = setInterval(checkStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const generateAIJoke = async (category) => {
     // Only block API calls during SSR
     if (typeof window === 'undefined') {
-      return null;
+      throw new Error('API not available during SSR');
     }
     
     // Check rate limiting
     if (!rateLimiter.isAllowed(API_ENDPOINTS.CHAT, RATE_LIMITS.JOKES_PER_MINUTE)) {
-      return null;
+      throw new Error('Rate limit exceeded. Please wait before requesting another joke.');
     }
     
     try {
-      // Generate Indian cultural prompt with session tracking
-      const selectedPrompt = indianPromptManager.generateDiversePrompt(category);
-      
-      // Create a more explicit language-specific prompt
-      let enhancedPrompt = selectedPrompt;
+      // Create language-specific prompt
+      let prompt = `Generate a funny Indian ${category} joke`;
       
       if (language === 'teglish') {
-        enhancedPrompt = `Generate a funny Indian ${category} joke in Teglish (Telugu-English mix). 
+        prompt = `Generate a funny Indian ${category} joke in Teglish (Telugu-English mix). Use MAXIMUM Telugu words and expressions. Be creative with the format:
 
-MANDATORY REQUIREMENTS:
-- You MUST mix Telugu and English words naturally
-- Use Telugu words like: arre, yaar, ra, bro, undi, chala, baaga, enduku, nuvvu, nenu, etc.
-- Make it sound like how Telugu friends talk to each other
-- Example style: "Arre yaar, Indian parents enduku late ga call chestaru? Because they want to disturb mana peaceful time ra!"
+FORMAT OPTIONS (choose one randomly):
+1. Conversation between two people:
+   Person A: "Enti bro, office lo promotion vachinda?"
+   Person B: "Ledu ra, boss ki Telugu raadu ani cheppanu!"
 
-Base context: ${selectedPrompt}
+2. Story format:
+   "Oka roju oka Telugu guy interview ki velladu. HR person adigindi..."
 
-Remember: Your joke MUST contain Telugu words mixed with English. Do NOT write in pure English.`;
+3. Question-Answer format:
+   "Telugu people enduku biryani ni antha istam padutaru? Endukante..."
+
+4. Character-based (like Raju, Ramesh, Sita, etc.):
+   "Raju garu epudu antaru..."
+
+5. Situation comedy:
+   "Telugu parents valla pillala friends ni meet chestunte..."
+
+ENHANCED LANGUAGE MIXING RULES (USE MORE TELUGU):
+- Use 70% Telugu and 30% English (heavily favor Telugu)
+- Telugu words to use frequently: enti, enduku, ela, epudu, ekkada, evaru, emi, ledu, vachindi, cheppanu, antaru, chestunte, padutaru, istam, bagundi, manchidi, etc.
+- Telugu expressions: "arre yaar", "aiyo rama", "baboi", "abbo", "ayya", "amma", "anna", "akka"
+- Telugu grammar patterns: "chestunte", "antunna", "vellipoyindi", "vachesindi", "chustunte"
+- Use English only for: modern tech terms, office words, brand names
+- Telugu sentence structures: "Enti ra idi?", "Ela unnav?", "Enduku late?", "Bagundi kada?"
+
+CONTENT THEMES for ${category}:
+${category === 'family' ? 
+  '- Family situations, school/college life, food, festivals, movies, cricket, technology' :
+  '- Adult relationships, workplace drama, dating struggles, marriage humor, social drinking, mild profanity, sexual innuendos, adult life problems, mature social situations'
+}
+
+LANGUAGE GUIDELINES for ${category}:
+${category === 'family' ? 
+  '- Keep it completely clean and appropriate for all ages' :
+  '- You can use mild bad words like "damn", "hell", "crap", "shit" when appropriate\n- Include adult themes like relationships, intimacy (tastefully), drinking, adult responsibilities\n- Use mature humor about dating, marriage, work stress, adult life struggles\n- Keep it spicy but not vulgar or offensive'
+}
+
+Make it sound like authentic Telugu conversation with heavy Telugu usage. Return ONLY the joke text.`;
       } else if (language === 'higlish') {
-        enhancedPrompt = `Generate a funny Indian ${category} joke in Higlish (Hindi-English mix).
+        prompt = `Generate a funny Indian ${category} joke in Higlish (Hindi-English mix). Use MAXIMUM Hindi words and expressions. Be creative with the format:
 
-MANDATORY REQUIREMENTS:
-- You MUST mix Hindi and English words naturally  
-- Use Hindi words like: yaar, bhai, kyun, hai, bahut, mast, arre, aur, kya, etc.
-- Make it sound like how Hindi friends talk to each other
-- Example style: "Yaar, Indian traffic mein kyun sab log expert drivers ban jaate hain? Because everyone thinks ki main hi sabse accha driver hun!"
+FORMAT OPTIONS (choose one randomly):
+1. Conversation between two friends:
+   Rahul: "Yaar, tere ghar mein WiFi password kya hai?"
+   Amit: "Bhai, 'mummykaphone123' - kyunki mummy hamesha bhool jaati hai!"
 
-Base context: ${selectedPrompt}
+2. Story format:
+   "Ek baar ek Delhi wala Bangalore gaya. Wahan auto driver se bola..."
 
-Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in pure English.`;
+3. Question-Answer format:
+   "Indian parents ko WhatsApp forwards kyun itna pasand hai? Kyunki..."
+
+4. Character-based (like Sharma ji, Gupta aunty, etc.):
+   "Sharma ji ka beta hamesha kehta hai..."
+
+5. Situation comedy:
+   "Jab Indian family restaurant mein jaati hai..."
+
+ENHANCED LANGUAGE MIXING RULES (USE MORE HINDI):
+- Use 70% Hindi and 30% English (heavily favor Hindi)
+- Hindi words to use frequently: kyunki, lekin, phir, kya, kaise, kahan, kab, kaun, kuch, sab, hamesha, kabhi, bilkul, bahut, etc.
+- Hindi expressions: "arre yaar", "hai na", "kya baat hai", "sach mein", "are bhai", "yaar", "boss", "dude"
+- Hindi grammar patterns: "kar raha hai", "ho gaya", "aa gaya", "ja raha hai", "dekh raha hai"
+- Use English only for: modern tech terms, office words, brand names
+- Hindi sentence structures: "Kya baat hai?", "Kaise ho?", "Kyun late?", "Accha hai na?"
+
+CONTENT THEMES for ${category}:
+${category === 'family' ? 
+  '- Family situations, school life, food, festivals, Bollywood, cricket, technology' :
+  '- Adult relationships, office politics, dating disasters, marriage comedy, drinking stories, mild profanity, sexual humor (tasteful), adult life struggles, mature social situations'
+}
+
+LANGUAGE GUIDELINES for ${category}:
+${category === 'family' ? 
+  '- Keep it completely clean and appropriate for all ages' :
+  '- You can use mild bad words like "damn", "hell", "crap", "shit" when appropriate\n- Include adult themes like relationships, intimacy (tastefully), drinking, adult responsibilities\n- Use mature humor about dating, marriage, work stress, adult life struggles\n- Keep it spicy but not vulgar or offensive'
+}
+
+Make it sound like authentic Hindi conversation with heavy Hindi usage. Return ONLY the joke text.`;
+      } else {
+        prompt = `Generate a funny Indian ${category} joke in English. Be creative with the format:
+
+FORMAT OPTIONS (choose one randomly):
+1. Conversation between characters:
+   "Mom: 'Beta, why are you always on your phone?'
+   Son: 'I'm learning, Mom!'
+   Mom: 'Learning what?'
+   Son: 'How to avoid your calls!'"
+
+2. Story format:
+   "An Indian student went to America for higher studies. On his first day..."
+
+3. Question-Answer format:
+   "Why don't Indian parents trust GPS? Because..."
+
+4. Character-based scenarios:
+   "Every Indian mom thinks her cooking is..."
+
+5. Observational humor:
+   "You know you're Indian when..."
+
+CONTENT THEMES for ${category}:
+${category === 'family' ? 
+  '- Family dynamics, education, food culture, festivals, technology, generational gaps' :
+  '- Adult relationships, workplace drama, dating life, marriage humor, drinking culture, mature social situations, adult responsibilities, relationship struggles, sexual humor (tasteful)'
+}
+
+LANGUAGE GUIDELINES for ${category}:
+${category === 'family' ? 
+  '- Keep it completely clean and appropriate for all ages' :
+  '- You can use mild profanity like "damn", "hell", "crap", "shit" when it adds to the humor\n- Include adult themes like dating disasters, marriage problems, work stress, drinking stories\n- Use mature humor about relationships, intimacy (tastefully), adult life struggles\n- Keep it edgy and spicy but not offensive or vulgar'
+}
+
+Make it relatable to Indian culture and genuinely funny. Return ONLY the joke text.`;
       }
-      
-      // Debug: Log the prompt being sent (remove in production)
-      console.log(`Sending ${language} prompt:`, enhancedPrompt.substring(0, 200) + '...');
       
       const response = await secureApiCall(API_ENDPOINTS.CHAT, {
         method: 'POST',
@@ -75,12 +187,11 @@ Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in
           messages: [
             {
               role: 'user',
-              content: enhancedPrompt
+              content: prompt
             }
           ],
-          // Add some randomness to model parameters
-          temperature: 0.9 + Math.random() * 0.1, // 0.9-1.0
-          top_p: 0.9 + Math.random() * 0.1 // 0.9-1.0
+          temperature: 0.9,
+          top_p: 0.9
         })
       });
 
@@ -88,102 +199,27 @@ Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in
       
       let aiJoke = data.content || '';
       
-      // Validate if the joke is in the requested language
-      const isValidLanguage = (joke, lang) => {
-        if (lang === 'english') return true; // English is always valid
-        
-        const teluguWords = ['arre', 'yaar', 'ra', 'bro', 'undi', 'chala', 'baaga', 'enduku', 'nuvvu', 'nenu', 'mana', 'chestaru', 'avutaru', 'unnav', 'chesanu'];
-        const hindiWords = ['yaar', 'bhai', 'kyun', 'hai', 'bahut', 'mast', 'arre', 'aur', 'kya', 'mein', 'hun', 'jaate', 'hain', 'ki', 'main', 'toh', 'kar', 'raha', 'rahi'];
-        
-        const wordsToCheck = lang === 'teglish' ? teluguWords : hindiWords;
-        const lowerJoke = joke.toLowerCase();
-        
-        return wordsToCheck.some(word => lowerJoke.includes(word));
-      };
-      
-      // If API response is not in requested language, use fallback
-      if (!isValidLanguage(aiJoke, language)) {
-        console.log('API response not in requested language, using fallback');
-        
-        // Use language-specific fallback jokes immediately
-        const fallbackJokes = {
-          english: {
-            family: [
-              "Why don't Indian parents ever get lost? Because they always know the way to guilt trip! 😄",
-              "What's the difference between Indian food and Indian parents? One is spicy, the other is extra spicy! 🌶️",
-              "Why do Indian kids never win hide and seek? Because their parents always find them through relatives! 👨‍👩‍👧‍👦",
-              "Why don't Indian mothers need GPS? They have built-in tracking for their children! 📱",
-              "What's an Indian parent's favorite exercise? Jumping to conclusions! 🏃‍♀️"
-            ],
-            spicy: [
-              "Indian traffic rules are like Indian politicians - they exist but nobody follows them! 🚗",
-              "Why is Indian internet like Indian trains? Both are delayed and overcrowded! 🚂",
-              "What's common between Indian weddings and Indian movies? Both are 3 hours long with unnecessary drama! 💒",
-              "Why do Indian offices have so many meetings? Because talking is easier than working! 💼",
-              "What's the difference between Indian roads and Swiss cheese? Swiss cheese has fewer holes! 🕳️"
-            ]
-          },
-          teglish: {
-            family: [
-              "Arre yaar, Indian parents enduku lost avvaru? Because they always know the way to guilt trip ra! 😄",
-              "Indian food mariyu Indian parents madhya difference enti bro? Okati spicy, inkokati extra spicy undi! 🌶️",
-              "Indian kids enduku hide and seek lo win avvaru? Endukante their parents always find them through relatives ra! 👨‍👩‍👧‍👦",
-              "Arre bro, Indian mothers ki GPS enduku kavali? They have built-in tracking for their children undi! 📱",
-              "Indian parent yela favorite exercise enti? Jumping to conclusions ra! 🏃‍♀️",
-              "Nuvvu school lo marks takkuva techinappudu, parents enduku scientist avutaru? Because they start analyzing everything ra! 📊",
-              "Indian family lo WiFi password enduku chala secure undi? Endukante parents don't want neighbors to use it! 📶"
-            ],
-            spicy: [
-              "Indian traffic rules Indian politicians laga unnai - they exist but evaru follow avvaru ra! 🚗",
-              "Indian internet enduku Indian trains laga undi bro? Both delayed and overcrowded! 🚂",
-              "Indian weddings mariyu Indian movies lo common enti? Both 3 hours long with unnecessary drama undi! 💒",
-              "Indian offices lo enduku chala meetings untai? Because talking is easier than working ra! 💼",
-              "Indian roads mariyu Swiss cheese madhya difference enti? Swiss cheese lo fewer holes untai! 🕳️",
-              "Indian government promises enduku monsoon laga untai? They come every year but you never know when! 🌧️",
-              "Office lo boss enduku Indian serial villain laga untadu? Because they create unnecessary suspense! 📺"
-            ]
-          },
-          higlish: {
-            family: [
-              "Yaar, Indian parents kyun nahi lost hote? Kyunki they always know the way to guilt trip! 😄",
-              "Indian food aur Indian parents mein kya difference hai bhai? Ek spicy hai, doosra extra spicy! 🌶️",
-              "Indian kids kyun nahi jeette hide and seek mein? Kyunki their parents always find them through relatives yaar! 👨‍👩‍👧‍👦",
-              "Arre yaar, Indian mothers ko GPS kyun nahi chahiye? They have built-in tracking for their children! 📱",
-              "Indian parent ka favorite exercise kya hai? Jumping to conclusions bhai! 🏃‍♀️",
-              "Jab tum school mein kam marks laate ho, parents kyun scientist ban jaate hain? Because they start analyzing everything yaar! 📊",
-              "Indian family mein WiFi password kyun itna secure hota hai? Kyunki parents don't want neighbors to use it! 📶"
-            ],
-            spicy: [
-              "Indian traffic rules Indian politicians jaise hain - they exist but koi follow nahi karta yaar! 🚗",
-              "Indian internet kyun Indian trains jaisa hai bhai? Both delayed aur overcrowded! 🚂",
-              "Indian weddings aur Indian movies mein kya common hai? Both 3 hours long with unnecessary drama! 💒",
-              "Indian offices mein kyun itni meetings hoti hain? Because talking is easier than working yaar! 💼",
-              "Indian roads aur Swiss cheese mein kya difference hai? Swiss cheese mein fewer holes hote hain! 🕳️",
-              "Indian government ke promises kyun monsoon jaise hote hain? They come every year but you never know when! 🌧️",
-              "Office mein boss kyun Indian serial villain jaisa hota hai? Because they create unnecessary suspense bhai! 📺"
-            ]
-          }
-        };
-        
-        const jokes = fallbackJokes[language] || fallbackJokes.english;
-        const categoryJokes = jokes[selectedCategory] || jokes.family;
-        const randomJoke = categoryJokes[Math.floor(Math.random() * categoryJokes.length)];
-        
-        return randomJoke;
-      }
-      
-      // Use enhanced response cleaning
-      aiJoke = processJokeResponse(aiJoke, category, []).cleanedJoke;
-      
       if (!aiJoke || aiJoke.length < 10) {
-        console.error('No valid joke content in response');
-        return null;
+        throw new Error('Invalid joke response from API');
       }
+      
+      // Clean the response
+      aiJoke = aiJoke
+        .replace(/^here'?s[^:]*:?\s*/i, '')
+        .replace(/^here\s+is[^:]*:?\s*/i, '')
+        .replace(/^\s*(joke|answer|setup|punchline|response|output|result)\s*:?\s*/i, '')
+        .replace(/^(sure|okay|alright|certainly|absolutely)[^:]*:?\s*/i, '')
+        .replace(/^["'`\s]+|["'`\s]+$/g, '')
+        .replace(/^\*\*|^\*|\*\*$|\*$/g, '')
+        .replace(/^\s*[-•*]+\s*/, '')
+        .replace(/^\s*\d+\.\s*/, '')
+        .replace(/\s*\n\s*/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
       
       return aiJoke;
     } catch (error) {
-      console.error('Error in generateAIJoke:', error.message);
-      return null;
+      throw error;
     }
   };
 
@@ -191,238 +227,63 @@ Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in
     setIsLoading(true);
     
     try {
-      let aiJoke = await generateAIJoke(selectedCategory);
+      // First check if API is available
+      const isApiHealthy = await checkApiHealth();
+      if (!isApiHealthy) {
+        throw new Error('API service is currently unavailable. Please try again later.');
+      }
       
-      if (!aiJoke) {
-        // Use language-specific fallback jokes when API fails
-        const fallbackJokes = {
-          english: {
-            family: [
-              "Why don't Indian parents ever get lost? Because they always know the way to guilt trip! 😄",
-              "What's the difference between Indian food and Indian parents? One is spicy, the other is extra spicy! 🌶️",
-              "Why do Indian kids never win hide and seek? Because their parents always find them through relatives! 👨‍👩‍👧‍👦"
-            ],
-            spicy: [
-              "Indian traffic rules are like Indian politicians - they exist but nobody follows them! 🚗",
-              "Why is Indian internet like Indian trains? Both are delayed and overcrowded! 🚂",
-              "What's common between Indian weddings and Indian movies? Both are 3 hours long with unnecessary drama! 💒"
-            ]
-          },
-          teglish: {
-            family: [
-              "Arre yaar, Indian parents enduku lost avvaru? Because they always know the way to guilt trip ra! 😄",
-              "Indian food mariyu Indian parents madhya difference enti bro? Okati spicy, inkokati extra spicy undi! 🌶️",
-              "Indian kids enduku hide and seek lo win avvaru? Endukante their parents always find them through relatives ra! 👨‍👩‍👧‍👦"
-            ],
-            spicy: [
-              "Indian traffic rules Indian politicians laga unnai - they exist but evaru follow avvaru ra! 🚗",
-              "Indian internet enduku Indian trains laga undi bro? Both delayed and overcrowded! 🚂",
-              "Indian weddings mariyu Indian movies lo common enti? Both 3 hours long with unnecessary drama undi! 💒"
-            ]
-          },
-          higlish: {
-            family: [
-              "Yaar, Indian parents kyun nahi lost hote? Kyunki they always know the way to guilt trip! 😄",
-              "Indian food aur Indian parents mein kya difference hai bhai? Ek spicy hai, doosra extra spicy! 🌶️",
-              "Indian kids kyun nahi jeette hide and seek mein? Kyunki their parents always find them through relatives yaar! 👨‍👩‍👧‍👦"
-            ],
-            spicy: [
-              "Indian traffic rules Indian politicians jaise hain - they exist but koi follow nahi karta yaar! 🚗",
-              "Indian internet kyun Indian trains jaisa hai bhai? Both delayed aur overcrowded! 🚂",
-              "Indian weddings aur Indian movies mein kya common hai? Both 3 hours long with unnecessary drama! 💒"
-            ]
-          }
+      const aiJoke = await generateAIJoke(selectedCategory);
+      
+      // Check for duplicates
+      const isDuplicate = jokeHistory.some(historyJoke => {
+        const normalizeJoke = (joke) => {
+          return joke.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
         };
+        return normalizeJoke(aiJoke) === normalizeJoke(historyJoke);
+      });
+      
+      if (isDuplicate) {
+        // Try one more time for a different joke
+        const retryJoke = await generateAIJoke(selectedCategory);
+        const isRetryDuplicate = jokeHistory.some(historyJoke => {
+          const normalizeJoke = (joke) => {
+            return joke.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+          };
+          return normalizeJoke(retryJoke) === normalizeJoke(historyJoke);
+        });
         
-        const jokes = fallbackJokes[language] || fallbackJokes.english;
-        const categoryJokes = jokes[selectedCategory] || jokes.family;
-        aiJoke = categoryJokes[Math.floor(Math.random() * categoryJokes.length)];
-        
+        if (!isRetryDuplicate) {
+          setCurrentJoke(retryJoke);
+          setJokeHistory(prev => [retryJoke, ...prev.slice(0, 5)]);
+          addXp(8);
+          updateStats('jokesHeard');
+        } else {
+          // If still duplicate, show the original joke anyway
+          setCurrentJoke(aiJoke);
+          setJokeHistory(prev => [aiJoke, ...prev.slice(0, 5)]);
+          addXp(8);
+          updateStats('jokesHeard');
+        }
+      } else {
         setCurrentJoke(aiJoke);
         setJokeHistory(prev => [aiJoke, ...prev.slice(0, 5)]);
         addXp(8);
         updateStats('jokesHeard');
-        return;
-      }
-      
-      // Use enhanced joke processing pipeline
-      let processedResult = processJokeResponse(aiJoke, selectedCategory, jokeHistory);
-      
-      let tries = 0;
-      const maxTries = 3;
-      
-      // Retry if joke is duplicate or low quality
-      while (tries < maxTries && (!processedResult.isValid || processedResult.isDuplicate)) {
-        aiJoke = await generateAIJoke(selectedCategory);
-        if (!aiJoke) break;
-        
-        processedResult = processJokeResponse(aiJoke, selectedCategory, jokeHistory);
-        tries++;
-      }
-      
-      if (processedResult.isValid && !processedResult.isDuplicate) {
-        const finalJoke = processedResult.cleanedJoke;
-        setCurrentJoke(finalJoke);
-        setJokeHistory(prev => [finalJoke, ...prev.slice(0, 5)]);
-        
-        // Award XP for generating a joke
-        addXp(8);
-        updateStats('jokesHeard');
-      } else {
-        // If strict validation fails, try with more lenient criteria
-        if (processedResult.cleanedJoke && 
-            processedResult.cleanedJoke.length > 10 && 
-            !processedResult.isDuplicate) {
-          
-          const finalJoke = processedResult.cleanedJoke;
-          setCurrentJoke(finalJoke);
-          setJokeHistory(prev => [finalJoke, ...prev.slice(0, 5)]);
-          
-          // Award XP for generating a joke
-          addXp(8);
-          updateStats('jokesHeard');
-        } else {
-          // Use language-specific fallback jokes
-          const fallbackJokes = {
-            english: {
-              family: [
-                "Why don't Indian parents ever get lost? Because they always know the way to guilt trip! 😄",
-                "What's the difference between Indian food and Indian parents? One is spicy, the other is extra spicy! 🌶️",
-                "Why do Indian kids never win hide and seek? Because their parents always find them through relatives! 👨‍👩‍👧‍👦",
-                "Why don't Indian mothers need GPS? They have built-in tracking for their children! 📱",
-                "What's an Indian parent's favorite exercise? Jumping to conclusions! 🏃‍♀️"
-              ],
-              spicy: [
-                "Indian traffic rules are like Indian politicians - they exist but nobody follows them! 🚗",
-                "Why is Indian internet like Indian trains? Both are delayed and overcrowded! 🚂",
-                "What's common between Indian weddings and Indian movies? Both are 3 hours long with unnecessary drama! 💒",
-                "Why do Indian offices have so many meetings? Because talking is easier than working! 💼",
-                "What's the difference between Indian roads and Swiss cheese? Swiss cheese has fewer holes! 🕳️"
-              ]
-            },
-            teglish: {
-              family: [
-                "Arre yaar, Indian parents enduku lost avvaru? Because they always know the way to guilt trip ra! 😄",
-                "Indian food mariyu Indian parents madhya difference enti bro? Okati spicy, inkokati extra spicy undi! 🌶️",
-                "Indian kids enduku hide and seek lo win avvaru? Endukante their parents always find them through relatives ra! 👨‍👩‍👧‍👦",
-                "Arre bro, Indian mothers ki GPS enduku kavali? They have built-in tracking for their children undi! �",
-                "Indian parent yela favorite exercise enti? Jumping to conclusions ra! 🏃‍♀️",
-                "Nuvvu school lo marks takkuva techinappudu, parents enduku scientist avutaru? Because they start analyzing everything ra! 📊",
-                "Indian family lo WiFi password enduku chala secure undi? Endukante parents don't want neighbors to use it! 📶"
-              ],
-              spicy: [
-                "Indian traffic rules Indian politicians laga unnai - they exist but evaru follow avvaru ra! �",
-                "Indian internet enduku Indian trains laga undi bro? Both delayed and overcrowded! 🚂",
-                "Indian weddings mariyu Indian movies lo common enti? Both 3 hours long with unnecessary drama undi! �",
-                "Indian offices lo enduku chala meetings untai? Because talking is easier than working ra! 💼",
-                "Indian roads mariyu Swiss cheese madhya difference enti? Swiss cheese lo fewer holes untai! �️",
-                "Indian government promises enduku monsoon laga untai? They come every year but you never know when! 🌧️",
-                "Office lo boss enduku Indian serial villain laga untadu? Because they create unnecessary suspense! �"
-              ]
-            },
-            higlish: {
-              family: [
-                "Yaar, Indian parents kyun nahi lost hote? Kyunki they always know the way to guilt trip! 😄",
-                "Indian food aur Indian parents mein kya difference hai bhai? Ek spicy hai, doosra extra spicy! 🌶️",
-                "Indian kids kyun nahi jeette hide and seek mein? Kyunki their parents always find them through relatives yaar! 👨‍👩‍👧‍👦",
-                "Arre yaar, Indian mothers ko GPS kyun nahi chahiye? They have built-in tracking for their children! 📱",
-                "Indian parent ka favorite exercise kya hai? Jumping to conclusions bhai! 🏃‍♀️",
-                "Jab tum school mein kam marks laate ho, parents kyun scientist ban jaate hain? Because they start analyzing everything yaar! 📊",
-                "Indian family mein WiFi password kyun itna secure hota hai? Kyunki parents don't want neighbors to use it! 📶"
-              ],
-              spicy: [
-                "Indian traffic rules Indian politicians jaise hain - they exist but koi follow nahi karta yaar! 🚗",
-                "Indian internet kyun Indian trains jaisa hai bhai? Both delayed aur overcrowded! 🚂",
-                "Indian weddings aur Indian movies mein kya common hai? Both 3 hours long with unnecessary drama! 💒",
-                "Indian offices mein kyun itni meetings hoti hain? Because talking is easier than working yaar! 💼",
-                "Indian roads aur Swiss cheese mein kya difference hai? Swiss cheese mein fewer holes hote hain! 🕳️",
-                "Indian government ke promises kyun monsoon jaise hote hain? They come every year but you never know when! 🌧️",
-                "Office mein boss kyun Indian serial villain jaisa hota hai? Because they create unnecessary suspense bhai! 📺"
-              ]
-            }
-          };
-          
-          const jokes = fallbackJokes[language] || fallbackJokes.english;
-          const categoryJokes = jokes[selectedCategory] || jokes.family;
-          const randomJoke = categoryJokes[Math.floor(Math.random() * categoryJokes.length)];
-          
-          setCurrentJoke(randomJoke);
-          setJokeHistory(prev => [randomJoke, ...prev.slice(0, 5)]);
-          
-          // Award XP for generating a joke
-          addXp(8);
-          updateStats('jokesHeard');
-        }
       }
     } catch (error) {
-      console.error('Error in generateNewJoke:', error);
+      // Show specific error messages based on the type of error
+      let errorMessage = 'Unable to generate joke. Please try again.';
       
-      // Use language-specific fallback jokes on error
-      const fallbackJokes = {
-        english: {
-          family: [
-            "Why don't Indian parents ever get lost? Because they always know the way to guilt trip! 😄",
-            "What's the difference between Indian food and Indian parents? One is spicy, the other is extra spicy! 🌶️",
-            "Why do Indian kids never win hide and seek? Because their parents always find them through relatives! 👨‍👩‍👧‍👦",
-            "Why don't Indian mothers need GPS? They have built-in tracking for their children! 📱",
-            "What's an Indian parent's favorite exercise? Jumping to conclusions! 🏃‍♀️"
-          ],
-          spicy: [
-            "Indian traffic rules are like Indian politicians - they exist but nobody follows them! 🚗",
-            "Why is Indian internet like Indian trains? Both are delayed and overcrowded! 🚂",
-            "What's common between Indian weddings and Indian movies? Both are 3 hours long with unnecessary drama! 💒",
-            "Why do Indian offices have so many meetings? Because talking is easier than working! 💼",
-            "What's the difference between Indian roads and Swiss cheese? Swiss cheese has fewer holes! 🕳️"
-          ]
-        },
-        teglish: {
-          family: [
-            "Arre yaar, Indian parents enduku lost avvaru? Because they always know the way to guilt trip ra! 😄",
-            "Indian food mariyu Indian parents madhya difference enti bro? Okati spicy, inkokati extra spicy undi! 🌶️",
-            "Indian kids enduku hide and seek lo win avvaru? Endukante their parents always find them through relatives ra! �‍👩‍👧‍👦",
-            "Arre bro, Indian mothers ki GPS enduku kavali? They have built-in tracking for their children undi! 📱",
-            "Indian parent yela favorite exercise enti? Jumping to conclusions ra! 🏃‍♀️",
-            "Nuvvu school lo marks takkuva techinappudu, parents enduku scientist avutaru? Because they start analyzing everything ra! 📊"
-          ],
-          spicy: [
-            "Indian traffic rules Indian politicians laga unnai - they exist but evaru follow avvaru ra! �",
-            "Indian internet enduku Indian trains laga undi bro? Both delayed and overcrowded! 🚂",
-            "Indian weddings mariyu Indian movies lo common enti? Both 3 hours long with unnecessary drama undi! 💒",
-            "Indian offices lo enduku chala meetings untai? Because talking is easier than working ra! �",
-            "Indian roads mariyu Swiss cheese madhya difference enti? Swiss cheese lo fewer holes untai! 🕳️",
-            "Office lo boss enduku Indian serial villain laga untadu? Because they create unnecessary suspense! �"
-          ]
-        },
-        higlish: {
-          family: [
-            "Yaar, Indian parents kyun nahi lost hote? Kyunki they always know the way to guilt trip! �",
-            "Indian food aur Indian parents mein kya difference hai bhai? Ek spicy hai, doosra extra spicy! 🌶️",
-            "Indian kids kyun nahi jeette hide and seek mein? Kyunki their parents always find them through relatives yaar! 👨‍👩‍👧‍👦",
-            "Arre yaar, Indian mothers ko GPS kyun nahi chahiye? They have built-in tracking for their children! 📱",
-            "Indian parent ka favorite exercise kya hai? Jumping to conclusions bhai! 🏃‍♀️",
-            "Jab tum school mein kam marks laate ho, parents kyun scientist ban jaate hain? Because they start analyzing everything yaar! 📊"
-          ],
-          spicy: [
-            "Indian traffic rules Indian politicians jaise hain - they exist but koi follow nahi karta yaar! 🚗",
-            "Indian internet kyun Indian trains jaisa hai bhai? Both delayed aur overcrowded! 🚂",
-            "Indian weddings aur Indian movies mein kya common hai? Both 3 hours long with unnecessary drama! 💒",
-            "Indian offices mein kyun itni meetings hoti hain? Because talking is easier than working yaar! 💼",
-            "Indian roads aur Swiss cheese mein kya difference hai? Swiss cheese mein fewer holes hote hain! 🕳️",
-            "Office mein boss kyun Indian serial villain jaisa hota hai? Because they create unnecessary suspense bhai! 📺"
-          ]
-        }
-      };
+      if (error.message.includes('Rate limit')) {
+        errorMessage = 'Please wait a moment before requesting another joke.';
+      } else if (error.message.includes('API service is currently unavailable')) {
+        errorMessage = 'Joke service is temporarily unavailable. Please try again in a few minutes.';
+      } else if (error.message.includes('Network error')) {
+        errorMessage = 'Please check your internet connection and try again.';
+      }
       
-      const jokes = fallbackJokes[language] || fallbackJokes.english;
-      const categoryJokes = jokes[selectedCategory] || jokes.family;
-      const randomJoke = categoryJokes[Math.floor(Math.random() * categoryJokes.length)];
-      
-      setCurrentJoke(randomJoke);
-      setJokeHistory(prev => [randomJoke, ...prev.slice(0, 5)]);
-      
-      // Award XP for generating a joke
-      addXp(8);
-      updateStats('jokesHeard');
+      setCurrentJoke(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -434,7 +295,7 @@ Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000); // Reset after 2 seconds
     } catch (error) {
-      console.error('Failed to copy:', error);
+      // Silently fail - copying is not critical functionality
     }
   };
 
@@ -538,6 +399,12 @@ Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in
                 <div className="text-xs text-gray-300 mt-2">
                   {getText('spicyDesc', language)}
                 </div>
+                <div className="text-xs text-red-400 mt-1 font-medium">
+                  ⚠️ Contains mild profanity & adult themes
+                </div>
+                <div className="text-xs text-gray-400 mt-1 italic">
+                  Examples: Dating disasters, work stress, relationship humor
+                </div>
               </button>
             </div>
           </div>
@@ -554,7 +421,7 @@ Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-white flex items-center">
                 <span className="mr-2">
-                  {selectedCategory === 'family' ? '👨‍👩‍👧‍👦' : '🌶️'}
+                  {selectedCategory === 'family' ? '👨‍👩‍👧‍�' : '🌶️'}
                 </span>
                 {selectedCategory === 'family' ? 'Family Joke' : '18+ Joke'}
               </h3>
@@ -564,6 +431,22 @@ Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in
                 </span>
                 <span className="text-sm text-gray-400 bg-gray-800/50 px-3 py-1 rounded-full">
                   {selectedCategory === 'family' ? 'Clean' : 'Spicy'}
+                </span>
+                <span className={`text-xs px-2 py-1 rounded-full flex items-center space-x-1 ${
+                  apiStatus === 'online' ? 'bg-green-500/20 text-green-400' :
+                  apiStatus === 'offline' ? 'bg-red-500/20 text-red-400' :
+                  'bg-yellow-500/20 text-yellow-400'
+                }`}>
+                  <div className={`w-2 h-2 rounded-full ${
+                    apiStatus === 'online' ? 'bg-green-400' :
+                    apiStatus === 'offline' ? 'bg-red-400' :
+                    'bg-yellow-400'
+                  }`}></div>
+                  <span>
+                    {apiStatus === 'online' ? 'Online' :
+                     apiStatus === 'offline' ? 'Offline' :
+                     'Checking...'}
+                  </span>
                 </span>
               </div>
             </div>
@@ -593,7 +476,7 @@ Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="text-xl sm:text-2xl text-gray-100 leading-relaxed text-center font-medium"
+                    className={`text-gray-100 leading-relaxed text-center font-medium ${getJokeFontSize(currentJoke)}`}
                   >
                     {currentJoke || "Click 'Generate New Joke' to get started!"}
                   </motion.div>
@@ -603,11 +486,22 @@ Remember: Your joke MUST contain Hindi words mixed with English. Do NOT write in
 
             <button
               onClick={generateNewJoke}
-              disabled={isLoading}
-              className="w-full px-8 py-4 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600 disabled:from-gray-600 disabled:via-gray-700 disabled:to-gray-800 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 flex items-center justify-center space-x-3 shadow-lg"
+              disabled={isLoading || apiStatus === 'offline'}
+              className={`w-full px-8 py-4 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 flex items-center justify-center space-x-3 shadow-lg ${
+                apiStatus === 'offline' 
+                  ? 'bg-gray-600 cursor-not-allowed' 
+                  : isLoading
+                    ? 'bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800'
+                    : 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600'
+              }`}
             >
               <RefreshCw className={`w-6 h-6 ${isLoading ? 'animate-spin' : ''}`} />
-              {isLoading ? getText('generating', language) : getText('generateJoke', language)}
+              {apiStatus === 'offline' 
+                ? 'Service Unavailable' 
+                : isLoading 
+                  ? getText('generating', language) 
+                  : getText('generateJoke', language)
+              }
             </button>
           </div>
         </motion.div>

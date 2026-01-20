@@ -101,10 +101,6 @@ const SingWithMe = () => {
       if (response.ok) {
         const data = await response.json();
         
-        if (data.fallback) {
-          setTranscriptionError('Using fallback lyrics - transcription service unavailable');
-        }
-        
         setSegments(data.segments || []);
         setWords(data.words || []);
         setProcessingProgress(100);
@@ -125,19 +121,8 @@ const SingWithMe = () => {
       }
       
     } catch (error) {
-      console.error('❌ Upload/transcription error:', error);
-      
-      // Provide helpful fallback lyrics
-      const fallbackSegments = [
-        { start: 0, end: 5, text: "🎵 Couldn't generate lyrics from this audio file" },
-        { start: 5, end: 10, text: "🎤 But you can still sing along to the music!" },
-        { start: 10, end: 15, text: "🎶 Try a clearer audio file for better results" },
-        { start: 15, end: 20, text: "✨ Enjoy the karaoke experience anyway!" }
-      ];
-      
-      setSegments(fallbackSegments);
-      setTranscriptionError(`Upload failed: ${error.message}`);
-      setProcessingProgress(100);
+      setIsUploading(false);
+      setError('Failed to process audio file. Please try a different file or check your internet connection.');
       
       // Still update stats and award some XP for trying
       setSessionStats(prev => ({
@@ -213,7 +198,6 @@ const SingWithMe = () => {
       }, 1000);
       
     } catch (err) {
-      console.error('❌ Microphone access error:', err);
       alert('Microphone access denied. Please allow microphone access and try again.');
     }
   }, [addXp, updateStats, recordingDuration]);

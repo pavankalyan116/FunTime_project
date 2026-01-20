@@ -81,7 +81,7 @@ export const CelebrationAnimation = ({ size = 100 }) => {
 };
 
 export const LoadingAnimation = ({ size = 60 }) => {
-  // Simple CSS-based loading animation as fallback
+  // Simple CSS-based loading animation
   return (
     <div className="inline-flex items-center justify-center" style={{ width: size, height: size }}>
       <div className="relative">

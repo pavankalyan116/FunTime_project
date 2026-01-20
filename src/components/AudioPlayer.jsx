@@ -34,7 +34,7 @@ export default function AudioPlayer({ audioUrl, setTime, duration, karaokeMode }
       gainNode.connect(ctx.destination);
 
     } catch (e) {
-      console.error("Web Audio API not supported or failed:", e);
+      // Web Audio API not supported - silently fall back to basic audio
     }
 
     return () => {

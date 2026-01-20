@@ -138,11 +138,9 @@ const Brainlock = () => {
         return; // Success, exit the retry loop
         
       } catch (e) {
-        console.error(`Quiz generation attempt ${attempts + 1} failed:`, e);
         attempts++;
         
         if (attempts >= maxAttempts) {
-          console.error("All quiz generation attempts failed");
           alert(`Failed to generate quiz after ${maxAttempts} attempts. Please try a different topic or check your connection.`);
           setGameStatus('idle');
           return;

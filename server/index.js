@@ -13,10 +13,14 @@ const app = express();
 const PORT = process.env.PORT || 5002;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-const MOCK_MODE = !GROQ_API_KEY;
-
-if (MOCK_MODE) {
-  console.warn("⚠️ GROQ_API_KEY missing. Server running in MOCK MODE.");
+if (!GROQ_API_KEY) {
+  console.error("❌ GROQ_API_KEY is required. Server cannot start without API key.");
+  console.error("📋 Setup Instructions:");
+  console.error("   1. Get your API key from https://console.groq.com/");
+  console.error("   2. Copy .env.example to .env");
+  console.error("   3. Add your API key: GROQ_API_KEY=your_key_here");
+  console.error("   4. Restart the server");
+  process.exit(1);
 }
 
 /* =====================
@@ -170,10 +174,7 @@ const upload = multer({
 /* =====================
    GROQ CLIENT
 ===================== */
-let groq;
-if (!MOCK_MODE) {
-  groq = new Groq({ apiKey: GROQ_API_KEY });
-}
+const groq = new Groq({ apiKey: GROQ_API_KEY });
 
 const recentJokes = [];
 const normalizeText = (t) =>
@@ -196,110 +197,237 @@ const rememberJoke = (t) => {
 app.get("/api/health", (req, res) => {
   res.json({ 
     status: "OK", 
-    timestamp: new Date().toISOString(),
-    mockMode: MOCK_MODE,
-    hasGroqKey: !!GROQ_API_KEY
+    timestamp: new Date().toISOString()
   });
 });
 
-// New AI Personality Generator endpoint
+// AI Personality Generator endpoint
 app.post("/api/personality", async (req, res) => {
-  const { name, mood, mode } = req.body;
+  const { name, mood, mode, language } = req.body;
   
   if (!name || !mode) {
     return res.status(400).json({ error: "Name and mode are required" });
   }
 
-  if (MOCK_MODE) {
-    const mockResponses = {
-      roast: [
-        `Oh ${name}, you're like a software update - nobody wants you, but you keep showing up anyway! 😂`,
-        `Hey ${name}, I'd roast you but my AI ethics won't let me burn trash! 🔥`,
-        `Listen ${name}, you're proof that even AI makes mistakes sometimes! 🤖`,
-        `${name}, you're like a broken keyboard - you're just not my type! ⌨️`
-      ],
-      compliment: [
-        `${name}, you're like perfectly optimized code - efficient, elegant, and absolutely brilliant! ✨`,
-        `Hey ${name}, if you were a programming language, you'd be Python - simple, powerful, and loved by everyone! 🐍`,
-        `${name}, you're the human equivalent of a successful deployment - everything just works better with you around! 🚀`,
-        `Listen ${name}, you're like a well-documented API - clear, helpful, and exactly what everyone needs! 📚`
-      ],
-      motivation: [
-        `${name}, you're not just debugging life - you're refactoring it into something amazing! 💪`,
-        `Hey ${name}, every expert was once a beginner. You're not stuck, you're just loading! ⏳`,
-        `${name}, your potential is like infinite recursion - it just keeps going and going! 🔄`,
-        `Remember ${name}, even the best developers get bugs. The difference is they keep coding! 🐛➡️✨`
-      ]
-    };
-    
-    const responses = mockResponses[mode] || mockResponses.roast;
-    const response = responses[Math.floor(Math.random() * responses.length)];
-    return res.json({ content: response });
-  }
-
   try {
     let systemPrompt = "";
+    let userPrompt = "";
     let temperature = 0.8;
+    
+    // Detect language preference from name or use provided language
+    const detectedLanguage = language || 'english';
     
     switch(mode) {
       case 'roast':
-        systemPrompt = `You are a witty AI comedian who creates playful, light-hearted roasts. Your roasts should be:
-        - Clever and creative, not mean-spirited
-        - Tech/internet culture themed when possible
-        - Include emojis for fun
-        - Never actually hurtful or offensive
-        - Maximum 2 sentences
-        - Always end on a playful note
-        ${mood ? `Consider their mood: ${mood}` : ''}`;
+        if (detectedLanguage === 'teglish') {
+          systemPrompt = `You are a witty Telugu-English comedian. Create playful roasts mixing Telugu and English with HEAVY Telugu usage. Be creative with formats:
+
+FORMAT OPTIONS (choose randomly):
+1. Conversation style: "Arre ${name}, nuvvu enti ra... [roast in mixed language]"
+2. Story format: "Oka roju ${name} garu... [funny story]"
+3. Comparison: "${name} is like... [Telugu-English comparison]"
+4. Question style: "${name} enduku always... [funny observation]"
+
+ENHANCED LANGUAGE RULES (USE MORE TELUGU):
+- Use 70% Telugu and 30% English (heavily favor Telugu)
+- Telugu words: enti, enduku, ela, epudu, ekkada, evaru, emi, ledu, vachindi, cheppanu, antaru, chestunte, padutaru, istam, bagundi, manchidi
+- Telugu expressions: arre, aiyo, baboi, abbo, ayya, amma, anna, akka
+- Telugu grammar: chestunte, antunna, vellipoyindi, vachesindi, chustunte
+- Use English only for modern concepts and tech terms
+- Keep it playful but can be edgy for adult humor
+- Include mild profanity when it adds to the roast: "damn", "hell", "shit"
+- Can include adult themes like relationships, dating, work stress
+- Include emojis
+- Maximum 2-3 sentences
+${mood ? `Consider their mood: ${mood}` : ''}`;
+        } else if (detectedLanguage === 'higlish') {
+          systemPrompt = `You are a witty Hindi-English comedian. Create playful roasts mixing Hindi and English with HEAVY Hindi usage. Be creative with formats:
+
+FORMAT OPTIONS (choose randomly):
+1. Conversation style: "Arre ${name}, tu kya yaar... [roast in mixed language]"
+2. Story format: "Ek baar ${name} ne... [funny story]"
+3. Comparison: "${name} is like... [Hindi-English comparison]"
+4. Question style: "${name} kyun always... [funny observation]"
+
+ENHANCED LANGUAGE RULES (USE MORE HINDI):
+- Use 70% Hindi and 30% English (heavily favor Hindi)
+- Hindi words: kyunki, lekin, phir, kya, kaise, kahan, kab, kaun, kuch, sab, hamesha, kabhi, bilkul, bahut
+- Hindi expressions: arre yaar, hai na, kya baat hai, sach mein, are bhai, yaar, boss
+- Hindi grammar: kar raha hai, ho gaya, aa gaya, ja raha hai, dekh raha hai
+- Use English only for modern concepts and tech terms
+- Keep it playful but can be edgy for adult humor
+- Include mild profanity when it adds to the roast: "damn", "hell", "shit"
+- Can include adult themes like relationships, dating, work stress
+- Include emojis
+- Maximum 2-3 sentences
+${mood ? `Consider their mood: ${mood}` : ''}`;
+        } else {
+          systemPrompt = `You are a witty AI comedian who creates playful, light-hearted roasts. Be creative with formats:
+
+FORMAT OPTIONS (choose randomly):
+1. Conversation style: "Hey ${name}, you know what..."
+2. Story format: "Once upon a time, ${name} tried to..."
+3. Comparison: "${name} is like..."
+4. Character analysis: "If ${name} was a..."
+5. Situation comedy: "When ${name} walks into a room..."
+
+RULES:
+- Clever and creative, can be edgy for adult humor
+- Tech/internet culture themed when possible
+- Include mild profanity when it enhances the roast: "damn", "hell", "shit"
+- Can include adult themes like dating disasters, work stress, relationship problems
+- Include emojis for fun
+- Never actually hurtful or offensive to groups/communities
+- Maximum 2-3 sentences
+- Keep it spicy but tasteful
+${mood ? `Consider their mood: ${mood}` : ''}`;
+        }
         temperature = 0.9;
         break;
         
       case 'compliment':
-        systemPrompt = `You are an uplifting AI that gives genuine, creative compliments. Your compliments should be:
-        - Unique and personalized
-        - Tech/programming themed when possible
-        - Genuinely uplifting and positive
-        - Include emojis for warmth
-        - Maximum 2 sentences
-        - Make them feel special and valued
-        ${mood ? `Consider their mood: ${mood}` : ''}`;
+        if (detectedLanguage === 'teglish') {
+          systemPrompt = `You are an uplifting Telugu-English speaker who gives genuine compliments. Be creative with formats:
+
+FORMAT OPTIONS (choose randomly):
+1. Direct praise: "${name} garu, meeru chala..."
+2. Comparison: "${name} is like... [beautiful Telugu-English comparison]"
+3. Story format: "Evaru chusina ${name} gurinchi antaru..."
+4. Quality focus: "${name} lo unna best quality enti ante..."
+
+RULES:
+- Mix Telugu and English naturally
+- Use Telugu expressions of appreciation: chala bagundi, wonderful ga undi
+- Genuinely uplifting and positive
+- Include emojis for warmth
+- Maximum 2-3 sentences
+${mood ? `Consider their mood: ${mood}` : ''}`;
+        } else if (detectedLanguage === 'higlish') {
+          systemPrompt = `You are an uplifting Hindi-English speaker who gives genuine compliments. Be creative with formats:
+
+FORMAT OPTIONS (choose randomly):
+1. Direct praise: "${name} yaar, tu bahut..."
+2. Comparison: "${name} is like... [beautiful Hindi-English comparison]"
+3. Story format: "Sabko pata hai ki ${name} kitna..."
+4. Quality focus: "${name} mein jo best quality hai woh..."
+
+RULES:
+- Mix Hindi and English naturally
+- Use Hindi expressions of appreciation: bahut accha, wonderful hai
+- Genuinely uplifting and positive
+- Include emojis for warmth
+- Maximum 2-3 sentences
+${mood ? `Consider their mood: ${mood}` : ''}`;
+        } else {
+          systemPrompt = `You are an uplifting AI that gives genuine, creative compliments. Be creative with formats:
+
+FORMAT OPTIONS (choose randomly):
+1. Direct praise: "${name}, you are absolutely..."
+2. Comparison: "${name} is like..."
+3. Story format: "Everyone who meets ${name} says..."
+4. Quality focus: "The best thing about ${name} is..."
+5. Future vision: "${name} has the potential to..."
+
+RULES:
+- Unique and personalized
+- Tech/programming themed when possible
+- Genuinely uplifting and positive
+- Include emojis for warmth
+- Maximum 2-3 sentences
+- Make them feel special and valued
+${mood ? `Consider their mood: ${mood}` : ''}`;
+        }
         temperature = 0.7;
         break;
         
       case 'motivation':
-        systemPrompt = `You are an inspiring AI coach who provides powerful motivation. Your messages should be:
-        - Energizing and empowering
-        - Include actionable mindset shifts
-        - Tech/life metaphors when possible
-        - Include emojis for energy
-        - Maximum 2 sentences
-        - Focus on growth and potential
-        ${mood ? `Consider their mood: ${mood}` : ''}`;
+        if (detectedLanguage === 'teglish') {
+          systemPrompt = `You are an inspiring Telugu-English motivational speaker. Be creative with formats:
+
+FORMAT OPTIONS (choose randomly):
+1. Direct motivation: "${name}, nuvvu cheyagalav..."
+2. Story format: "Oka successful person laga ${name} kuda..."
+3. Challenge format: "${name}, ee challenge ni face cheyyi..."
+4. Vision format: "${name} future lo enti avutav ante..."
+
+RULES:
+- Mix Telugu and English naturally
+- Use Telugu motivational expressions: cheyagalav, try cheyyi, success avutav
+- Energizing and empowering
+- Include actionable mindset shifts
+- Include emojis for energy
+- Maximum 2-3 sentences
+${mood ? `Consider their mood: ${mood}` : ''}`;
+        } else if (detectedLanguage === 'higlish') {
+          systemPrompt = `You are an inspiring Hindi-English motivational speaker. Be creative with formats:
+
+FORMAT OPTIONS (choose randomly):
+1. Direct motivation: "${name}, tu kar sakta hai..."
+2. Story format: "Jaise successful log karte hain, ${name} bhi..."
+3. Challenge format: "${name}, is challenge ko face kar..."
+4. Vision format: "${name} ka future kitna bright hai..."
+
+RULES:
+- Mix Hindi and English naturally
+- Use Hindi motivational expressions: kar sakta hai, try kar, success milegi
+- Energizing and empowering
+- Include actionable mindset shifts
+- Include emojis for energy
+- Maximum 2-3 sentences
+${mood ? `Consider their mood: ${mood}` : ''}`;
+        } else {
+          systemPrompt = `You are an inspiring AI coach who provides powerful motivation. Be creative with formats:
+
+FORMAT OPTIONS (choose randomly):
+1. Direct motivation: "${name}, you have the power to..."
+2. Story format: "Just like successful people, ${name} can..."
+3. Challenge format: "${name}, here's your challenge..."
+4. Vision format: "${name}'s future is bright because..."
+5. Action plan: "${name}, start by..."
+
+RULES:
+- Energizing and empowering
+- Include actionable mindset shifts
+- Tech/life metaphors when possible
+- Include emojis for energy
+- Maximum 2-3 sentences
+- Focus on growth and potential
+${mood ? `Consider their mood: ${mood}` : ''}`;
+        }
         temperature = 0.8;
         break;
+        
+      default:
+        return res.status(400).json({ error: "Invalid mode. Use 'roast', 'compliment', or 'motivation'" });
     }
+
+    userPrompt = `Create a creative ${mode} for ${name}${mood ? ` who is feeling ${mood}` : ''}. Use one of the suggested formats and make it engaging and memorable.`;
 
     const completion = await groq.chat.completions.create({
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Create a ${mode} for someone named ${name}${mood ? ` who is feeling ${mood}` : ''}.` }
+        { role: "user", content: userPrompt }
       ],
       model: "llama-3.3-70b-versatile",
       temperature,
-      max_tokens: 150,
+      max_tokens: 200,
       top_p: 0.9
     });
 
-    const content = completion.choices[0]?.message?.content || "Something went wrong, but you're still awesome!";
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("No response generated");
+    }
+    
     res.json({ content });
     
   } catch (err) {
     console.error("❌ Personality generation error:", err);
-    res.status(500).json({ error: err.message || "Personality generation failed" });
+    res.status(500).json({ error: "Failed to generate personality response. Please try again." });
   }
 });
 
-// Enhanced mood detection endpoint
+// Mood detection endpoint
 app.post("/api/mood-detect", async (req, res) => {
   const { text } = req.body;
   
@@ -307,71 +435,68 @@ app.post("/api/mood-detect", async (req, res) => {
     return res.status(400).json({ error: "Text is required" });
   }
 
-  if (MOCK_MODE) {
-    const moods = ['happy', 'excited', 'tired', 'stressed', 'confident', 'bored', 'creative', 'focused'];
-    const mood = moods[Math.floor(Math.random() * moods.length)];
-    const suggestions = {
-      happy: { activity: 'Share your joy with others!', game: 'arcade', color: 'green' },
-      excited: { activity: 'Channel that energy into something fun!', game: 'arcade', color: 'orange' },
-      tired: { activity: 'Take it easy with something relaxing', game: 'sing-with-me', color: 'blue' },
-      stressed: { activity: 'Let off some steam!', game: 'roast-me', color: 'red' },
-      confident: { activity: 'Challenge yourself!', game: 'brainlock', color: 'purple' },
-      bored: { activity: 'Discover something new!', game: 'destiny', color: 'pink' },
-      creative: { activity: 'Express yourself!', game: 'sing-with-me', color: 'cyan' },
-      focused: { activity: 'Put that focus to good use!', game: 'brainlock', color: 'indigo' }
-    };
-    
-    return res.json({ 
-      mood, 
-      confidence: 0.85,
-      suggestion: suggestions[mood]
-    });
-  }
-
   try {
     const completion = await groq.chat.completions.create({
       messages: [
         { 
           role: "system", 
-          content: `You are an expert mood analyzer. Analyze the user's text and respond with ONLY a JSON object in this exact format:
+          content: `You are an expert mood and emotion analyzer with deep understanding of human psychology. Analyze the user's text creatively and respond with ONLY a JSON object in this exact format:
           {
             "mood": "primary_emotion",
             "confidence": 0.85,
             "suggestion": {
-              "activity": "brief suggestion text",
+              "activity": "creative and personalized suggestion",
               "game": "recommended_game_page",
               "color": "mood_color"
-            }
+            },
+            "insight": "brief psychological insight about their state",
+            "energy_level": "high/medium/low"
           }
+          
+          MOOD ANALYSIS APPROACH:
+          - Look for subtle emotional cues, not just obvious words
+          - Consider context, tone, and underlying feelings
+          - Detect mixed emotions and complex states
+          - Identify energy levels and motivation patterns
+          - Consider cultural and generational context
+          
+          CREATIVE SUGGESTIONS:
+          - Make activity suggestions specific and actionable
+          - Consider their current energy and mood state
+          - Suggest complementary or balancing activities
+          - Be encouraging and supportive
           
           Available games: "arcade", "brainlock", "destiny", "sing-with-me", "roast-me", "jokes"
           Available colors: "red", "blue", "green", "yellow", "purple", "pink", "orange", "cyan", "indigo"
           
-          Keep suggestions brief and encouraging.` 
+          EXAMPLES OF CREATIVE INSIGHTS:
+          - "You seem to be processing something important"
+          - "There's a spark of curiosity in your words"
+          - "You're in a reflective, growth-oriented mindset"
+          - "Your energy suggests you're ready for a challenge"` 
         },
-        { role: "user", content: `Analyze this text for mood: "${text}"` }
+        { role: "user", content: `Analyze this text deeply for mood, emotions, and psychological state: "${text}"` }
       ],
       model: "llama-3.3-70b-versatile",
-      temperature: 0.3,
-      max_tokens: 200
+      temperature: 0.4,
+      max_tokens: 300
     });
 
-    const content = completion.choices[0]?.message?.content || '{}';
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("No response generated");
+    }
+    
     try {
       const result = JSON.parse(content);
       res.json(result);
-    } catch {
-      // Fallback if JSON parsing fails
-      res.json({ 
-        mood: 'neutral', 
-        confidence: 0.5,
-        suggestion: { activity: 'Explore something fun!', game: 'arcade', color: 'blue' }
-      });
+    } catch (parseError) {
+      throw new Error("Invalid JSON response from AI");
     }
     
   } catch (err) {
     console.error("❌ Mood detection error:", err);
-    res.status(500).json({ error: err.message || "Mood detection failed" });
+    res.status(500).json({ error: "Failed to analyze mood. Please try again." });
   }
 });
 
@@ -379,73 +504,6 @@ app.post("/api/chat", async (req, res) => {
   const { messages, model = "llama-3.3-70b-versatile" } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: "Messages array is required" });
-  }
-
-  if (MOCK_MODE) {
-    const lastMsg = messages[messages.length - 1].content.toLowerCase();
-    let content = "I am a mock AI. Please add a valid GROQ_API_KEY to .env to get real responses.";
-    
-    if (lastMsg.includes("quiz")) {
-        content = JSON.stringify([
-            {
-                question: "What is the capital of France?",
-                options: ["London", "Berlin", "Paris", "Madrid"],
-                correctAnswer: 2,
-                explanation: "Paris is the capital of France."
-            },
-            {
-                question: "Which planet is known as the Red Planet?",
-                options: ["Venus", "Mars", "Jupiter", "Saturn"],
-                correctAnswer: 1,
-                explanation: "Mars appears red due to iron oxide."
-            },
-            {
-                question: "What is 2 + 2?",
-                options: ["3", "4", "5", "22"],
-                correctAnswer: 1,
-                explanation: "Basic arithmetic."
-            },
-            {
-                question: "Who wrote Romeo and Juliet?",
-                options: ["Charles Dickens", "William Shakespeare", "Mark Twain", "Jane Austen"],
-                correctAnswer: 1,
-                explanation: "Shakespeare wrote many famous plays."
-            },
-             {
-                question: "What is the largest ocean?",
-                options: ["Atlantic", "Indian", "Arctic", "Pacific"],
-                correctAnswer: 3,
-                explanation: "The Pacific Ocean is the largest."
-            }
-        ]);
-    } else if (lastMsg.includes("astrology") || lastMsg.includes("reading") || lastMsg.includes("vedic") || lastMsg.includes("jyotish") || lastMsg.includes("rashi") || lastMsg.includes("nakshatra")) {
-        const vedicResponses = [
-          "The cosmic energies reveal profound insights about your destiny. Your planetary positions suggest a period of transformation and spiritual growth ahead.",
-          "According to ancient Vedic wisdom, the alignment of celestial bodies in your birth chart indicates strong karmic influences guiding your path.",
-          "The sacred texts of Jyotish Shastra illuminate your soul's journey. Your Rashi and Nakshatra combination brings unique blessings from the cosmic realm.",
-          "Vedic astrology reveals that your birth star holds the key to understanding your dharma and life purpose in this incarnation.",
-          "The ancient rishis would say your planetary configuration suggests a harmonious balance between material success and spiritual evolution."
-        ];
-        content = vedicResponses[Math.floor(Math.random() * vedicResponses.length)];
-    } else if (lastMsg.includes("flames")) {
-         content = "A connection written in the stars!";
-    } else if (lastMsg.includes("joke") || lastMsg.includes("indian") || lastMsg.includes("family") || lastMsg.includes("cultural")) {
-        const indianJokes = [
-          "Why did the Indian student bring a ladder to school? Because he heard the classes were high-level!",
-          "What do you call an Indian who loves cricket? Normal! What do you call one who doesn't? Suspicious!",
-          "Why don't Indian parents ever get lost? Because they always know the way to their child's future!",
-          "What's the difference between Indian traffic and a Bollywood movie? The traffic actually moves faster!",
-          "Why did the Indian programmer quit his job? Because he didn't get arrays! (a raise)",
-          "What do you call an Indian family WhatsApp group? A democracy where everyone talks but nobody listens!",
-          "Why do Indian mothers never run out of food? Because they cook for an army even when feeding just two people!",
-          "What's an Indian student's favorite subject? Math, because it's the only place where problems have clear solutions!",
-          "Why did the Indian cricket fan bring a pillow to the match? Because he knew it would be a long day!",
-          "What do you call an Indian who doesn't like spicy food? Lost!"
-        ];
-        content = indianJokes[Math.floor(Math.random() * indianJokes.length)];
-    }
-
-    return res.json({ role: "assistant", content });
   }
 
   try {
@@ -459,12 +517,16 @@ app.post("/api/chat", async (req, res) => {
         temperature: 0.7,
         top_p: 0.95
       });
-      return res.json(chatCompletion.choices[0]?.message || {});
+      
+      const response = chatCompletion.choices[0]?.message;
+      if (!response || !response.content) {
+        throw new Error("No response generated");
+      }
+      
+      return res.json(response);
     }
 
-    // For joke requests, use the Indian cultural prompt directly from the frontend
-    // The frontend already sends the complete Indian cultural prompt, so we just use it
-    
+    // For joke requests, use enhanced duplicate detection
     const avoidList = recentJokes.slice(0, 10).join("\n");
     const avoidSys = avoidList.length > 0 ? {
       role: "system",
@@ -488,27 +550,24 @@ app.post("/api/chat", async (req, res) => {
     let attempts = 0;
     let msg = null;
     while (attempts < 3) {
-      // Use the Indian cultural prompt directly from the frontend
-      // The frontend sends a complete prompt with Indian cultural context
       const fullMessages = avoidSys ? [avoidSys, ...messages] : [...messages];
       
       const completion = await groq.chat.completions.create({
         messages: fullMessages,
         model,
-        temperature: 0.95 + Math.random() * 0.05, // 0.95-1.0 for more creativity
-        top_p: 0.9 + Math.random() * 0.1, // 0.9-1.0
-        max_tokens: 150, // Increased for Indian jokes which might be longer
-        presence_penalty: 1.0, // Increased to avoid repetition
+        temperature: 0.95 + Math.random() * 0.05,
+        top_p: 0.9 + Math.random() * 0.1,
+        max_tokens: 150,
+        presence_penalty: 1.0,
         frequency_penalty: 0.8
       });
       
       msg = completion.choices[0]?.message || {};
       const txt = msg.content || "";
       
-      // Enhanced duplicate detection for Indian cultural context
-      const duplicate = isDuplicateJoke(txt) || recentJokes.slice(0, 10).some((r) => jaccard(r, txt) > 0.35); // Lowered threshold for Indian jokes
+      const duplicate = isDuplicateJoke(txt) || recentJokes.slice(0, 10).some((r) => jaccard(r, txt) > 0.35);
       
-      if (!duplicate && txt.length > 10) { // Ensure we have meaningful content
+      if (!duplicate && txt.length > 10) {
         rememberJoke(txt);
         break;
       }
@@ -516,35 +575,20 @@ app.post("/api/chat", async (req, res) => {
       attempts++;
     }
     
-    // If we couldn't generate a unique joke after 3 attempts, return the last attempt anyway
     if (!msg || !msg.content) {
-      msg = {
-        role: "assistant",
-        content: "Sorry, couldn't generate a unique, culturally relevant joke right now. Please try again!"
-      };
+      throw new Error("Failed to generate unique joke after multiple attempts");
     }
     
     res.json(msg);
   } catch (err) {
     console.error("❌ Chat completion error:", err);
-    res.status(500).json({ error: err.message || "Chat completion failed" });
+    res.status(500).json({ error: "Failed to generate response. Please try again." });
   }
 });
 
 app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No audio file uploaded" });
-  }
-
-  if (MOCK_MODE) {
-     return res.json({
-         segments: [
-             { start: 0, end: 5, text: "🎵 This is a mock transcription for your audio" },
-             { start: 5, end: 10, text: "🎤 The lyrics feature requires a Groq API key" },
-             { start: 10, end: 15, text: "🎶 But you can still enjoy the karaoke experience!" },
-             { start: 15, end: 20, text: "✨ Upload your favorite songs and sing along!" }
-         ]
-     });
   }
 
   try {
@@ -557,34 +601,18 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
       response_format: "verbose_json"
     });
 
+    if (!transcription.segments || transcription.segments.length === 0) {
+      throw new Error("No transcription segments generated");
+    }
+
     res.json({
-      segments: transcription.segments || [],
+      segments: transcription.segments,
       words: transcription.words || []
     });
     
   } catch (err) {
     console.error("❌ Transcription error:", err.message);
-    console.error("🔍 Error details:", {
-      name: err.name,
-      code: err.code,
-      status: err.status
-    });
-    
-    // Always return a successful response with fallback data
-    const fallbackSegments = [
-      { start: 0, end: 5, text: "🎵 Couldn't generate lyrics from this audio file" },
-      { start: 5, end: 10, text: "🎤 The audio might be too complex or unclear" },
-      { start: 10, end: 15, text: "🎶 Try a clearer recording or different file format" },
-      { start: 15, end: 20, text: "✨ You can still sing along to the music!" }
-    ];
-    
-    // Return 200 OK with fallback data instead of 500 error
-    res.status(200).json({
-      segments: fallbackSegments,
-      words: [],
-      fallback: true,
-      originalError: err.message
-    });
+    res.status(500).json({ error: "Failed to transcribe audio. Please try a different file or check the audio quality." });
     
   } finally {
     // Cleanup uploaded file
@@ -599,5 +627,5 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} | MOCK: ${MOCK_MODE ? 'ON' : 'OFF'} | API: ${GROQ_API_KEY ? 'OK' : 'MISSING'}`);
+  console.log(`🚀 Server running on port ${PORT} | API: Connected`);
 });
