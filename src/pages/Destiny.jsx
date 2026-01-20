@@ -414,8 +414,7 @@ const AstrologyReader = () => {
       Write in traditional Vedic style with Sanskrit terms, making it detailed and authentic (300-400 words).`;
 
     try {
-      console.log('Making Vedic Astrology API call to:', API_URL);
-      
+
       const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -426,8 +425,7 @@ const AstrologyReader = () => {
         })
       });
 
-      console.log('Vedic Astrology API Response Status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Vedic Astrology API Error:', errorText);
@@ -435,8 +433,7 @@ const AstrologyReader = () => {
       }
 
       const resData = await response.json();
-      console.log('Vedic Astrology API Response:', resData);
-      
+
       const reading = resData.content || resData.reading || "The cosmic energies are aligning... Please consult again.";
       setReading(reading);
     } catch (e) {

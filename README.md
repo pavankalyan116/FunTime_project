@@ -131,8 +131,17 @@ lyrics_project/
 
 ## Environment Variables
 
-- `GROQ_API_KEY` - Your Groq API key for transcription
-- `PORT` - Port number for the backend server (default: 5001)
+Create a `.env` file in the root directory (never commit this file):
+
+```env
+# GROQ API Key - Get from https://console.groq.com/
+GROQ_API_KEY=your_groq_api_key_here
+
+# Server Configuration
+PORT=5002
+```
+
+**⚠️ SECURITY WARNING**: Never commit your `.env` file or API keys to version control!
 
 ## Contributing
 
@@ -161,3 +170,31 @@ This project is licensed under the MIT License.
 - Verify all dependencies are installed
 - Ensure both frontend and backend servers are running
 - Check network connectivity for API calls
+
+## 🔒 Security Features
+
+This application implements several security measures:
+
+- **API Key Protection**: No API keys are exposed in frontend code
+- **Rate Limiting**: Prevents abuse with request limits per user/IP
+- **CORS Protection**: Only allows requests from approved domains  
+- **Security Headers**: Implements standard security headers
+- **Input Validation**: Validates and sanitizes all user inputs
+- **Error Handling**: Generic error messages prevent information leakage
+
+## 🚀 Deployment
+
+### Backend (Render.com)
+1. Create a new Web Service on Render.com
+2. Connect your GitHub repository
+3. Set environment variables in Render dashboard:
+   - `GROQ_API_KEY`: Your actual API key
+   - `PORT`: 5002
+   - `NODE_ENV`: production
+
+### Frontend (GitHub Pages)
+1. Run: `npm run deploy`
+2. Enable GitHub Pages in repository settings
+3. Select `gh-pages` branch as source
+
+See `deploy-config.md` for detailed security deployment guide.

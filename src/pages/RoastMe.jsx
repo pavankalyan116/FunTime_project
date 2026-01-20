@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Heart, Zap, Share2, RefreshCw, Sparkles } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
 import { LoadingAnimation, FireAnimation, HeartAnimation, LightningAnimation } from '../components/LottieAnimations';
+import { secureApiCall, API_ENDPOINTS, rateLimiter, RATE_LIMITS } from '../config/api.js';
 
 const RoastMe = () => {
   const { addXp, updateStats, updateStreak } = useGame();
@@ -22,6 +23,12 @@ const RoastMe = () => {
   const generateResponse = async () => {
     if (!name.trim()) return;
     
+    // Check rate limiting
+    if (!rateLimiter.isAllowed(API_ENDPOINTS.PERSONALITY, RATE_LIMITS.PERSONALITY_PER_MINUTE)) {
+      setResult("Please wait a moment before generating another response.");
+      return;
+    }
+    
     setIsLoading(true);
     setShowResult(false);
     
@@ -29,22 +36,14 @@ const RoastMe = () => {
     updateStreak();
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5002';
-      const response = await fetch(`${apiUrl}/api/personality`, {
+      const response = await secureApiCall(API_ENDPOINTS.PERSONALITY, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           name: name.trim(),
           mood: mood.trim() || null,
           mode
         })
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate response');
-      }
 
       const data = await response.json();
       setResult(data.content);
@@ -74,7 +73,7 @@ const RoastMe = () => {
       updateStats(statKey);
       
     } catch (error) {
-      console.error('Error generating response:', error);
+      console.error('Error generating response:', error.message);
       // Fallback to mock responses if API fails
       const mockResponses = {
         roast: [

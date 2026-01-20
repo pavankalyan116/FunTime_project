@@ -19,8 +19,7 @@ import UploadCard from '../components/UploadCard';
 import KaraokeLyrics from '../components/KaraokeLyrics';
 import AudioPlayer from '../components/AudioPlayer';
 import { useGame } from '../contexts/GameContext';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
+import { secureApiCall, API_ENDPOINTS, rateLimiter, RATE_LIMITS } from '../config/api.js';
 
 const SingWithMe = () => {
   const { addXp, updateStats, updateStreak } = useGame();
@@ -56,15 +55,8 @@ const SingWithMe = () => {
     totalSingTime: 0
   });
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🔗 SingWithMe using API_URL:', API_URL);
-  }, []);
-
   // Enhanced upload handler with proper error handling
   const handleUpload = useCallback(async (file) => {
-    console.log('📁 Starting upload process for:', file.name);
-    
     // Reset state
     setAudioFile(file);
     setAudioUrl(URL.createObjectURL(file));
@@ -95,24 +87,22 @@ const SingWithMe = () => {
     formData.append("audio", file);
 
     try {
-      console.log('📤 Sending file to transcription API...');
+      // Check rate limiting for transcription
+      if (!rateLimiter.isAllowed(API_ENDPOINTS.TRANSCRIBE, RATE_LIMITS.TRANSCRIPTIONS_PER_HOUR, 3600000)) {
+        throw new Error('Transcription rate limit exceeded. Please try again later.');
+      }
       
-      const response = await fetch(`${API_URL}/api/transcribe`, {
+      const response = await secureApiCall(API_ENDPOINTS.TRANSCRIBE, {
         method: "POST",
         body: formData,
+        headers: {} // Let browser set Content-Type for FormData
       });
-
-      console.log('📥 Response status:', response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Transcription response:', data);
         
         if (data.fallback) {
-          console.log('⚠️ Using fallback lyrics:', data.originalError);
           setTranscriptionError('Using fallback lyrics - transcription service unavailable');
-        } else {
-          console.log('🎵 Real transcription received with', data.segments?.length || 0, 'segments');
         }
         
         setSegments(data.segments || []);
@@ -169,8 +159,7 @@ const SingWithMe = () => {
   // Enhanced recording functionality
   const startRecording = useCallback(async () => {
     try {
-      console.log('🎤 Starting recording...');
-      
+
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: { 
           echoCancellation: true,
@@ -195,8 +184,7 @@ const SingWithMe = () => {
       };
       
       mediaRecorder.onstop = () => {
-        console.log('🛑 Recording stopped, processing...');
-        
+
         const blob = new Blob(chunks, { type: 'audio/webm' });
         const url = URL.createObjectURL(blob);
         setRecordingUrl(url);
@@ -232,8 +220,7 @@ const SingWithMe = () => {
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
-      console.log('⏹️ Stopping recording...');
-      
+
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       clearInterval(recordingTimerRef.current);

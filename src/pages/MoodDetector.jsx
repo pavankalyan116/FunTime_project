@@ -4,6 +4,7 @@ import { Brain, Sparkles, ArrowRight, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useGame } from '../contexts/GameContext';
 import { MoodAnimations } from '../components/LottieAnimations';
+import { secureApiCall, API_ENDPOINTS, rateLimiter, RATE_LIMITS } from '../config/api.js';
 
 const MoodDetector = () => {
   const { addXp, updateStats } = useGame();
@@ -19,20 +20,12 @@ const MoodDetector = () => {
     setShowResult(false);
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5002';
-      const response = await fetch(`${apiUrl}/api/mood-detect`, {
+      const response = await secureApiCall(API_ENDPOINTS.MOOD_DETECT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           text: inputText.trim()
         })
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to detect mood');
-      }
 
       const data = await response.json();
       setMoodResult(data);

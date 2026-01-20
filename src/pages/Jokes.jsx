@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Laugh, RefreshCw, Copy, Sparkles, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../contexts/GameContext';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
+import indianPromptManager, { 
+  processJokeResponse,
+  isJokeDuplicate 
+} from '../utils/indianPromptSystem.js';
+import { secureApiCall, API_ENDPOINTS, rateLimiter, RATE_LIMITS } from '../config/api.js';
 
 const Jokes = () => {
   const { addXp, updateStats } = useGame();
-  
-  // Debug: Log the API URL being used
-  console.log('🔗 Jokes using API_URL:', API_URL);
   
   const [currentJoke, setCurrentJoke] = useState('');
   const [jokeHistory, setJokeHistory] = useState([]);
@@ -20,44 +20,20 @@ const Jokes = () => {
   const generateAIJoke = async (category) => {
     // Only block API calls during SSR
     if (typeof window === 'undefined') {
-      console.log('API call blocked - SSR mode');
+      return null;
+    }
+    
+    // Check rate limiting
+    if (!rateLimiter.isAllowed(API_ENDPOINTS.CHAT, RATE_LIMITS.JOKES_PER_MINUTE)) {
       return null;
     }
     
     try {
-      // Add more randomness to prevent caching
-      const timestamp = Date.now();
-      const randomSeed = Math.random().toString(36).substring(2, 15);
-      const sessionId = Math.random().toString(36).substring(2, 8);
+      // Generate Indian cultural prompt with session tracking
+      const selectedPrompt = indianPromptManager.generateDiversePrompt(category);
       
-      // More diverse prompt variations
-      const promptVariations = {
-        family: [
-          `Generate a completely original, clean, family-friendly one-liner joke. Make it witty and unexpected. Return ONLY the joke text. Session: ${sessionId}, Time: ${timestamp}`,
-          `Create a fresh, wholesome joke that would make everyone laugh. Be creative and original. Return ONLY the joke text. Seed: ${randomSeed}`,
-          `Write a clever, clean joke with an unexpected punchline. Make it family-appropriate and funny. Return ONLY the joke text. ID: ${sessionId}`,
-          `Craft an original, G-rated joke that's both smart and silly. Surprise me with creativity. Return ONLY the joke text. Token: ${randomSeed}`,
-          `Generate a brand new, clean comedy one-liner. Make it clever and unexpected. Return ONLY the joke text. Ref: ${timestamp}`
-        ],
-        spicy: [
-          `Generate a completely original, adult (18+) one-liner joke with maximum humor while avoiding slurs or hate. Be bold and funny. Return ONLY the joke text. Session: ${sessionId}`,
-          `Create a fresh, spicy adult joke that pushes boundaries safely. Be witty and edgy. Return ONLY the joke text. Seed: ${randomSeed}`,
-          `Write a clever, adult-oriented joke with an unexpected twist. Make it spicy but not offensive. Return ONLY the joke text. ID: ${sessionId}`,
-          `Craft an original, 18+ joke that's both smart and provocative. Surprise me with bold humor. Return ONLY the joke text. Token: ${randomSeed}`,
-          `Generate a brand new, adult comedy one-liner. Make it edgy and hilarious. Return ONLY the joke text. Ref: ${timestamp}`
-        ]
-      };
-
-      const prompts = promptVariations[category] || promptVariations.family;
-      const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-      
-      console.log('Making API request for category:', category, 'with prompt variation');
-      
-      const response = await fetch(`${API_URL}/api/chat`, {
+      const response = await secureApiCall(API_ENDPOINTS.CHAT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           messages: [
             {
@@ -71,42 +47,21 @@ const Jokes = () => {
         })
       });
 
-      console.log('API Response Status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error Details:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorBody: errorText
-        });
-        throw new Error(`API failed: ${response.status} - ${errorText}`);
-      }
-
       const data = await response.json();
-      console.log('API Response Data:', data);
       
       let aiJoke = data.content || '';
       
-      // Better cleaning of the response
-      aiJoke = aiJoke
-        .replace(/^here'?s[^:]*:?\s*/i, '')
-        .replace(/^\s*(joke|answer|setup|punchline)\s*:?\s*/i, '')
-        .replace(/^["'`]|["'`]$/g, '')
-        .replace(/^\s*-\s*/, '') // Remove leading dash
-        .replace(/\s*\n\s*/g, ' ') // Replace newlines with spaces
-        .trim();
+      // Use enhanced response cleaning
+      aiJoke = processJokeResponse(aiJoke, category, []).cleanedJoke;
       
       if (!aiJoke || aiJoke.length < 10) {
-        console.error('No valid joke content in response:', data);
+        console.error('No valid joke content in response');
         return null;
       }
       
-      console.log('Successfully generated joke:', aiJoke);
       return aiJoke;
     } catch (error) {
-      console.error('Complete error in generateAIJoke:', error);
-      console.error('Error stack:', error.stack);
+      console.error('Error in generateAIJoke:', error.message);
       return null;
     }
   };
@@ -117,46 +72,50 @@ const Jokes = () => {
     try {
       let aiJoke = await generateAIJoke(selectedCategory);
       
-      // Better duplicate detection - check against all recent jokes
-      const normalize = (t) => (t || '').toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
-      const isVeryShort = (t) => (t || '').trim().length < 10;
+      if (!aiJoke) {
+        setCurrentJoke("Sorry, couldn't generate a joke right now. Please try again!");
+        return;
+      }
       
-      // Simple similarity check for frontend
-      const isSimilar = (joke1, joke2) => {
-        const words1 = normalize(joke1).split(' ').filter(w => w.length > 2);
-        const words2 = normalize(joke2).split(' ').filter(w => w.length > 2);
-        const commonWords = words1.filter(w => words2.includes(w));
-        return commonWords.length > Math.min(words1.length, words2.length) * 0.5;
-      };
+      // Use enhanced joke processing pipeline
+      let processedResult = processJokeResponse(aiJoke, selectedCategory, jokeHistory);
       
       let tries = 0;
       const maxTries = 3;
       
-      while (tries < maxTries && aiJoke) {
-        // Check if joke is too short or similar to recent jokes
-        const isDuplicate = jokeHistory.some(historyJoke => 
-          normalize(aiJoke) === normalize(historyJoke) || 
-          isSimilar(aiJoke, historyJoke)
-        );
-        
-        if (!isDuplicate && !isVeryShort(aiJoke)) {
-          break;
-        }
-        
-        console.log(`Attempt ${tries + 1}: Regenerating due to ${isVeryShort(aiJoke) ? 'short length' : 'similarity'}`);
+      // Retry if joke is duplicate or low quality
+      while (tries < maxTries && (!processedResult.isValid || processedResult.isDuplicate)) {
         aiJoke = await generateAIJoke(selectedCategory);
+        if (!aiJoke) break;
+        
+        processedResult = processJokeResponse(aiJoke, selectedCategory, jokeHistory);
         tries++;
       }
       
-      if (aiJoke && aiJoke.trim() && !isVeryShort(aiJoke)) {
-        setCurrentJoke(aiJoke);
-        setJokeHistory(prev => [aiJoke, ...prev.slice(0, 5)]);
+      if (processedResult.isValid && !processedResult.isDuplicate) {
+        const finalJoke = processedResult.cleanedJoke;
+        setCurrentJoke(finalJoke);
+        setJokeHistory(prev => [finalJoke, ...prev.slice(0, 5)]);
         
         // Award XP for generating a joke
         addXp(8);
         updateStats('jokesHeard');
       } else {
-        setCurrentJoke("Sorry, couldn't generate a unique joke right now. Please try again!");
+        // If strict validation fails, try with more lenient criteria
+        if (processedResult.cleanedJoke && 
+            processedResult.cleanedJoke.length > 10 && 
+            !processedResult.isDuplicate) {
+          
+          const finalJoke = processedResult.cleanedJoke;
+          setCurrentJoke(finalJoke);
+          setJokeHistory(prev => [finalJoke, ...prev.slice(0, 5)]);
+          
+          // Award XP for generating a joke
+          addXp(8);
+          updateStats('jokesHeard');
+        } else {
+          setCurrentJoke("Sorry, couldn't generate a unique, culturally relevant joke right now. Please try again!");
+        }
       }
     } catch (error) {
       console.error('Error in generateNewJoke:', error);
@@ -202,13 +161,13 @@ const Jokes = () => {
             className="text-5xl sm:text-6xl lg:text-7xl font-black mb-4 sm:mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent leading-tight flex items-center justify-center"
           >
             <Laugh className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 mr-3 sm:mr-4" />
-            Admin Jokes
+            Indian Jokes
             <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 ml-3 sm:ml-4 text-yellow-400" />
           </motion.h1>
           <motion.p 
             className="text-lg sm:text-xl lg:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed font-light"
           >
-            Get your daily dose of AI-powered humor! Choose between Family-friendly and 18+ jokes.
+            Get your daily dose of culturally relevant Indian humor! Jokes that every Indian can relate to.
           </motion.p>
         </motion.div>
 
@@ -237,6 +196,9 @@ const Jokes = () => {
                   <span className="text-2xl">👨‍👩‍👧‍👦</span>
                   <span className="text-lg">Family Friendly</span>
                 </div>
+                <div className="text-xs text-gray-300 mt-2">
+                  School, family, cricket, Bollywood & daily life
+                </div>
               </button>
               <button
                 onClick={() => setSelectedCategory('spicy')}
@@ -249,6 +211,9 @@ const Jokes = () => {
                 <div className="flex items-center justify-center space-x-3">
                   <span className="text-2xl">🌶️</span>
                   <span className="text-lg">18+ Jokes</span>
+                </div>
+                <div className="text-xs text-gray-300 mt-2">
+                  Politics, work pressure, relationships & social life
                 </div>
               </button>
             </div>
@@ -272,7 +237,7 @@ const Jokes = () => {
               </h3>
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-400 bg-gray-800/50 px-3 py-1 rounded-full">
-                  🎭 Admin
+                  🇮🇳 Indian
                 </span>
                 <span className="text-sm text-gray-400 bg-gray-800/50 px-3 py-1 rounded-full">
                   {selectedCategory === 'family' ? 'Clean' : 'Spicy'}
@@ -296,7 +261,7 @@ const Jokes = () => {
                         <div className="w-3 h-3 bg-pink-500 rounded-full animate-bounce delay-100"></div>
                         <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce delay-200"></div>
                       </div>
-                      <p className="text-gray-400 text-lg">Admin is crafting a joke...</p>
+                      <p className="text-gray-400 text-lg">Crafting an Indian joke...</p>
                     </div>
                   </motion.div>
                 ) : (

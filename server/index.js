@@ -22,30 +22,119 @@ if (MOCK_MODE) {
 /* =====================
    CORS
 ===================== */
+/* =====================
+   CORS CONFIGURATION - Enhanced Security
+===================== */
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001', 
+  'http://localhost:3002',
+  'http://localhost:3003',
+  'https://pavankalyan116.github.io',
+  'https://funtime-project.onrender.com'
+];
+
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
+      
       try {
         const url = new URL(origin);
         const host = url.hostname;
-        const isLocalhost = host === "localhost";
-        const isRender = host.endsWith(".onrender.com");
-        const isGithubPages = host.endsWith("github.io");
-        const explicit = origin === "https://funtime-project.onrender.com" || origin === "https://pavankalyan116.github.io";
-        if (isLocalhost || isRender || isGithubPages || explicit) {
+        
+        // Check against allowed origins
+        if (allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
-      } catch {}
-      return callback(null, false);
+        
+        // Allow localhost with any port for development
+        if (host === "localhost" || host === "127.0.0.1") {
+          return callback(null, true);
+        }
+        
+        // Allow render.com and github.io domains
+        if (host.endsWith(".onrender.com") || host.endsWith("github.io")) {
+          return callback(null, true);
+        }
+        
+        return callback(new Error("Not allowed by CORS"), false);
+      } catch (error) {
+        console.error('CORS origin parsing error:', error);
+        return callback(new Error("Invalid origin"), false);
+      }
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    credentials: true
+    credentials: true,
+    maxAge: 86400 // 24 hours
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Add size limit for security
+
+/* =====================
+   SECURITY MIDDLEWARE
+===================== */
+// Rate limiting middleware
+const requestCounts = new Map();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 100;
+
+const rateLimitMiddleware = (req, res, next) => {
+  const clientIP = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  
+  if (!requestCounts.has(clientIP)) {
+    requestCounts.set(clientIP, []);
+  }
+  
+  const requests = requestCounts.get(clientIP);
+  
+  // Remove old requests outside the window
+  const validRequests = requests.filter(time => now - time < RATE_LIMIT_WINDOW);
+  
+  if (validRequests.length >= MAX_REQUESTS_PER_WINDOW) {
+    return res.status(429).json({ 
+      error: 'Too many requests. Please try again later.',
+      retryAfter: Math.ceil(RATE_LIMIT_WINDOW / 1000)
+    });
+  }
+  
+  validRequests.push(now);
+  requestCounts.set(clientIP, validRequests);
+  
+  next();
+};
+
+// Apply rate limiting to API routes
+app.use('/api', rateLimitMiddleware);
+
+// Security headers middleware
+app.use((req, res, next) => {
+  // Prevent clickjacking
+  res.setHeader('X-Frame-Options', 'DENY');
+  
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
+  // Enable XSS protection
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Referrer policy
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Content Security Policy (basic)
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
+  
+  next();
+});
+
+// Request logging middleware (errors only)
+app.use((req, res, next) => {
+  // Only log errors, not all requests
+  next();
+});
 
 /* =====================
    PREFLIGHT HANDLER
@@ -122,7 +211,6 @@ app.post("/api/personality", async (req, res) => {
   }
 
   if (MOCK_MODE) {
-    console.log("Mocking personality response...");
     const mockResponses = {
       roast: [
         `Oh ${name}, you're like a software update - nobody wants you, but you keep showing up anyway! 😂`,
@@ -220,7 +308,6 @@ app.post("/api/mood-detect", async (req, res) => {
   }
 
   if (MOCK_MODE) {
-    console.log("Mocking mood detection...");
     const moods = ['happy', 'excited', 'tired', 'stressed', 'confident', 'bored', 'creative', 'focused'];
     const mood = moods[Math.floor(Math.random() * moods.length)];
     const suggestions = {
@@ -295,7 +382,6 @@ app.post("/api/chat", async (req, res) => {
   }
 
   if (MOCK_MODE) {
-    console.log("Mocking chat response...");
     const lastMsg = messages[messages.length - 1].content.toLowerCase();
     let content = "I am a mock AI. Please add a valid GROQ_API_KEY to .env to get real responses.";
     
@@ -343,15 +429,20 @@ app.post("/api/chat", async (req, res) => {
         content = vedicResponses[Math.floor(Math.random() * vedicResponses.length)];
     } else if (lastMsg.includes("flames")) {
          content = "A connection written in the stars!";
-    } else if (lastMsg.includes("joke")) {
-        const jokes = [
-          "I told my computer I needed a break, and it said: 'No problem, I'll go to sleep.'",
-          "Why did the developer go broke? Because he used up all his cache.",
-          "I asked the AI for a joke. It said: 404 humor not found. Then it found one!",
-          "Why don't keyboards fight? They don't want to start a type war.",
-          "My code works... until someone looks at it. Then the bugs wake up."
+    } else if (lastMsg.includes("joke") || lastMsg.includes("indian") || lastMsg.includes("family") || lastMsg.includes("cultural")) {
+        const indianJokes = [
+          "Why did the Indian student bring a ladder to school? Because he heard the classes were high-level!",
+          "What do you call an Indian who loves cricket? Normal! What do you call one who doesn't? Suspicious!",
+          "Why don't Indian parents ever get lost? Because they always know the way to their child's future!",
+          "What's the difference between Indian traffic and a Bollywood movie? The traffic actually moves faster!",
+          "Why did the Indian programmer quit his job? Because he didn't get arrays! (a raise)",
+          "What do you call an Indian family WhatsApp group? A democracy where everyone talks but nobody listens!",
+          "Why do Indian mothers never run out of food? Because they cook for an army even when feeding just two people!",
+          "What's an Indian student's favorite subject? Math, because it's the only place where problems have clear solutions!",
+          "Why did the Indian cricket fan bring a pillow to the match? Because he knew it would be a long day!",
+          "What do you call an Indian who doesn't like spicy food? Lost!"
         ];
-        content = jokes[Math.floor(Math.random() * jokes.length)];
+        content = indianJokes[Math.floor(Math.random() * indianJokes.length)];
     }
 
     return res.json({ role: "assistant", content });
@@ -360,7 +451,7 @@ app.post("/api/chat", async (req, res) => {
   try {
     const lastMsg = (messages[messages.length - 1]?.content || "").toLowerCase();
     const isJokeRequest = /joke/.test(lastMsg);
-    const wantAdult = /(18\+|adult|spicy)/.test(lastMsg);
+    
     if (!isJokeRequest) {
       const chatCompletion = await groq.chat.completions.create({
         messages,
@@ -371,54 +462,14 @@ app.post("/api/chat", async (req, res) => {
       return res.json(chatCompletion.choices[0]?.message || {});
     }
 
+    // For joke requests, use the Indian cultural prompt directly from the frontend
+    // The frontend already sends the complete Indian cultural prompt, so we just use it
+    
     const avoidList = recentJokes.slice(0, 10).join("\n");
-    const baseSys = {
+    const avoidSys = avoidList.length > 0 ? {
       role: "system",
-      content:
-        `You are a creative comedian. Produce a fresh, unique one-liner joke every time. Do not repeat previous jokes. Adult jokes are allowed when requested, but avoid unlawful content, slurs, and targeted hate. Return only the joke text without any preamble. Current timestamp: ${Date.now()}, Session: ${Math.random().toString(36).substring(2)}`
-    };
-    const avoidSys =
-      avoidList.length > 0
-        ? {
-            role: "system",
-            content: `Do not produce any joke semantically similar to:\n${avoidList}`
-          }
-        : null;
-
-    const themes = [
-      "unexpected office mishap",
-      "zombie barista at midnight", 
-      "time-traveling toaster",
-      "astronaut with stage fright",
-      "cat that speaks in legal terms",
-      "AI trying stand-up comedy",
-      "ghost stuck in a revolving door",
-      "chef who only cooks with emojis",
-      "pirate with gluten-free rum",
-      "detective allergic to mysteries",
-      "vampire dentist",
-      "robot learning to dance",
-      "penguin running a hot dog stand",
-      "wizard with terrible WiFi",
-      "superhero afraid of heights",
-      "ninja with loud sneakers",
-      "dragon on a diet",
-      "alien trying to parallel park",
-      "mummy unwrapping presents",
-      "werewolf at a hair salon",
-      "unicorn stuck in traffic",
-      "dinosaur using social media",
-      "genie with commitment issues",
-      "yeti working customer service",
-      "phoenix with fire insurance"
-    ];
-    const theme = themes[Math.floor(Math.random() * themes.length)];
-    const styleSys = {
-      role: "system",
-      content: wantAdult
-        ? `Adult one-liner with maximum spice while staying safe; no slurs or targeted hate. Use the theme: ${theme}. Be completely original and avoid clichés.`
-        : `Clean, family-friendly one-liner. Use the theme: ${theme}. Be completely original and avoid clichés.`
-    };
+      content: `Do not produce any joke semantically similar to:\n${avoidList}`
+    } : null;
 
     const tokenize = (s) =>
       (s || "")
@@ -437,28 +488,43 @@ app.post("/api/chat", async (req, res) => {
     let attempts = 0;
     let msg = null;
     while (attempts < 3) {
-      const fullMessages = avoidSys
-        ? [baseSys, avoidSys, styleSys, ...messages]
-        : [baseSys, styleSys, ...messages];
+      // Use the Indian cultural prompt directly from the frontend
+      // The frontend sends a complete prompt with Indian cultural context
+      const fullMessages = avoidSys ? [avoidSys, ...messages] : [...messages];
+      
       const completion = await groq.chat.completions.create({
         messages: fullMessages,
         model,
         temperature: 0.95 + Math.random() * 0.05, // 0.95-1.0 for more creativity
         top_p: 0.9 + Math.random() * 0.1, // 0.9-1.0
-        max_tokens: 128,
+        max_tokens: 150, // Increased for Indian jokes which might be longer
         presence_penalty: 1.0, // Increased to avoid repetition
         frequency_penalty: 0.8
       });
+      
       msg = completion.choices[0]?.message || {};
       const txt = msg.content || "";
-      const duplicate = isDuplicateJoke(txt) || recentJokes.slice(0, 10).some((r) => jaccard(r, txt) > 0.4);
-      if (!duplicate) {
+      
+      // Enhanced duplicate detection for Indian cultural context
+      const duplicate = isDuplicateJoke(txt) || recentJokes.slice(0, 10).some((r) => jaccard(r, txt) > 0.35); // Lowered threshold for Indian jokes
+      
+      if (!duplicate && txt.length > 10) { // Ensure we have meaningful content
         rememberJoke(txt);
         break;
       }
+      
       attempts++;
     }
-    res.json(msg || {});
+    
+    // If we couldn't generate a unique joke after 3 attempts, return the last attempt anyway
+    if (!msg || !msg.content) {
+      msg = {
+        role: "assistant",
+        content: "Sorry, couldn't generate a unique, culturally relevant joke right now. Please try again!"
+      };
+    }
+    
+    res.json(msg);
   } catch (err) {
     console.error("❌ Chat completion error:", err);
     res.status(500).json({ error: err.message || "Chat completion failed" });
@@ -466,21 +532,11 @@ app.post("/api/chat", async (req, res) => {
 });
 
 app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
-  console.log("📁 Transcribe endpoint hit");
-  
   if (!req.file) {
-    console.log("❌ No file uploaded");
     return res.status(400).json({ error: "No audio file uploaded" });
   }
 
-  console.log("📄 File received:", {
-    filename: req.file.originalname,
-    size: req.file.size,
-    mimetype: req.file.mimetype
-  });
-
   if (MOCK_MODE) {
-     console.log("🎭 Running in MOCK MODE - returning mock transcription");
      return res.json({
          segments: [
              { start: 0, end: 5, text: "🎵 This is a mock transcription for your audio" },
@@ -492,13 +548,8 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
   }
 
   try {
-    console.log("🔄 Processing audio file for transcription...");
-    
     const fileBuffer = fs.readFileSync(req.file.path);
-    console.log("📊 File buffer size:", fileBuffer.length);
-    
     const fileForGroq = await toFile(fileBuffer, req.file.originalname);
-    console.log("📤 Sending to Groq API...");
     
     const transcription = await groq.audio.transcriptions.create({
       file: fileForGroq,
@@ -506,8 +557,6 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
       response_format: "verbose_json"
     });
 
-    console.log("✅ Transcription successful! Segments:", transcription.segments?.length || 0);
-    
     res.json({
       segments: transcription.segments || [],
       words: transcription.words || []
@@ -522,8 +571,6 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
     });
     
     // Always return a successful response with fallback data
-    console.log("🔄 Returning fallback lyrics instead of error");
-    
     const fallbackSegments = [
       { start: 0, end: 5, text: "🎵 Couldn't generate lyrics from this audio file" },
       { start: 5, end: 10, text: "🎤 The audio might be too complex or unclear" },
@@ -544,7 +591,6 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
     if (req.file && req.file.path) {
       try {
         fs.unlinkSync(req.file.path);
-        console.log("🗑️ Cleaned up uploaded file");
       } catch (cleanupErr) {
         console.error("⚠️ Error cleaning up file:", cleanupErr.message);
       }
@@ -553,7 +599,5 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 MOCK_MODE: ${MOCK_MODE ? 'ON' : 'OFF'}`);
-  console.log(`🔑 GROQ_API_KEY: ${GROQ_API_KEY ? 'SET' : 'NOT SET'}`);
+  console.log(`Server running on port ${PORT} | MOCK: ${MOCK_MODE ? 'ON' : 'OFF'} | API: ${GROQ_API_KEY ? 'OK' : 'MISSING'}`);
 });
