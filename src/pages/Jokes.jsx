@@ -11,7 +11,7 @@ import { secureApiCall, API_ENDPOINTS, rateLimiter, RATE_LIMITS, checkApiHealth 
 const Jokes = () => {
   const { addXp, updateStats } = useGame();
   const { language } = useLanguage();
-  
+
   const [currentJoke, setCurrentJoke] = useState('');
   const [jokeHistory, setJokeHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +22,7 @@ const Jokes = () => {
   // Auto-adjust font size based on joke length
   const getJokeFontSize = (joke) => {
     if (!joke) return 'text-xl sm:text-2xl';
-    
+
     const length = joke.length;
     if (length <= 100) return 'text-2xl sm:text-3xl lg:text-4xl'; // Short jokes - larger font
     if (length <= 200) return 'text-xl sm:text-2xl lg:text-3xl'; // Medium jokes
@@ -40,7 +40,7 @@ const Jokes = () => {
         setApiStatus('offline');
       }
     };
-    
+
     checkStatus();
     // Check status every 30 seconds
     const interval = setInterval(checkStatus, 30000);
@@ -52,135 +52,74 @@ const Jokes = () => {
     if (typeof window === 'undefined') {
       throw new Error('API not available during SSR');
     }
-    
+
     // Check rate limiting
     if (!rateLimiter.isAllowed(API_ENDPOINTS.CHAT, RATE_LIMITS.JOKES_PER_MINUTE)) {
       throw new Error('Rate limit exceeded. Please wait before requesting another joke.');
     }
-    
+
     try {
       // Create language-specific prompt
       let prompt = `Generate a funny Indian ${category} joke`;
-      
+
       if (language === 'teglish') {
-        prompt = `Generate a funny Indian ${category} joke in Teglish (Telugu-English mix). Use MAXIMUM Telugu words and expressions. Be creative with the format:
+        prompt = `Generate a funny Indian ${category} joke in Teglish (Telugu-English mix).
 
-FORMAT OPTIONS (choose one randomly):
-1. Conversation between two people:
-   Person A: "Enti bro, office lo promotion vachinda?"
-   Person B: "Ledu ra, boss ki Telugu raadu ani cheppanu!"
+STYLE: You're an Andhra guy living in Hyderabad. Mix 65% Telugu with 35% English naturally.
 
-2. Story format:
-   "Oka roju oka Telugu guy interview ki velladu. HR person adigindi..."
+KEY PHRASES: Use "rey", "kada", "enti", "ela unnav", "bagundi", "over action", "full ga", "mind block", "arre babu", "ayyo", "anna", "akka", "macha"
 
-3. Question-Answer format:
-   "Telugu people enduku biryani ni antha istam padutaru? Endukante..."
+TOPICS: ${category === 'family' ? 
+  'Family life, biryani, Hyd traffic, office, movies, cricket, festivals' : 
+  'Dating, marriage, work stress, relationships, adult life problems'}
 
-4. Character-based (like Raju, Ramesh, Sita, etc.):
-   "Raju garu epudu antaru..."
+CONTENT: ${category === 'family' ? 
+  'Keep it clean and family-friendly' : 
+  'Include adult themes, mild profanity okay, relationship humor'}
 
-5. Situation comedy:
-   "Telugu parents valla pillala friends ni meet chestunte..."
+FORMAT: Short conversation or story (2-4 lines max). Use \\n for line breaks.
 
-ENHANCED LANGUAGE MIXING RULES (USE MORE TELUGU):
-- Use 70% Telugu and 30% English (heavily favor Telugu)
-- Telugu words to use frequently: enti, enduku, ela, epudu, ekkada, evaru, emi, ledu, vachindi, cheppanu, antaru, chestunte, padutaru, istam, bagundi, manchidi, etc.
-- Telugu expressions: "arre yaar", "aiyo rama", "baboi", "abbo", "ayya", "amma", "anna", "akka"
-- Telugu grammar patterns: "chestunte", "antunna", "vellipoyindi", "vachesindi", "chustunte"
-- Use English only for: modern tech terms, office words, brand names
-- Telugu sentence structures: "Enti ra idi?", "Ela unnav?", "Enduku late?", "Bagundi kada?"
-
-CONTENT THEMES for ${category}:
-${category === 'family' ? 
-  '- Family situations, school/college life, food, festivals, movies, cricket, technology' :
-  '- Adult relationships, workplace drama, dating struggles, marriage humor, social drinking, mild profanity, sexual innuendos, adult life problems, mature social situations'
-}
-
-LANGUAGE GUIDELINES for ${category}:
-${category === 'family' ? 
-  '- Keep it completely clean and appropriate for all ages' :
-  '- You can use mild bad words like "damn", "hell", "crap", "shit" when appropriate\n- Include adult themes like relationships, intimacy (tastefully), drinking, adult responsibilities\n- Use mature humor about dating, marriage, work stress, adult life struggles\n- Keep it spicy but not vulgar or offensive'
-}
-
-Make it sound like authentic Telugu conversation with heavy Telugu usage. Return ONLY the joke text.`;
+Return ONLY the joke text with natural line breaks.`;
       } else if (language === 'higlish') {
-        prompt = `Generate a funny Indian ${category} joke in Higlish (Hindi-English mix). Use MAXIMUM Hindi words and expressions. Be creative with the format:
+        prompt = `Generate a funny Indian ${category} joke in Higlish (Hindi-English mix).
 
-FORMAT OPTIONS (choose one randomly):
-1. Conversation between two friends:
-   Rahul: "Yaar, tere ghar mein WiFi password kya hai?"
-   Amit: "Bhai, 'mummykaphone123' - kyunki mummy hamesha bhool jaati hai!"
+STYLE: You're a North Indian (Delhi/UP/Punjab) living in a metro city. Mix 65% Hindi with 35% English naturally.
 
-2. Story format:
-   "Ek baar ek Delhi wala Bangalore gaya. Wahan auto driver se bola..."
+KEY PHRASES: Use "yaar", "bhai", "arre", "kyunki", "lekin", "kya baat hai", "sach mein", "bilkul", "zabardast", "jugaad", "timepass", "chill kar"
 
-3. Question-Answer format:
-   "Indian parents ko WhatsApp forwards kyun itna pasand hai? Kyunki..."
+TOPICS: ${category === 'family' ? 
+  'Family dynamics, Delhi life, food (butter chicken, chole), Bollywood, cricket, technology' : 
+  'Dating disasters, office politics, marriage comedy, drinking stories, adult relationships'}
 
-4. Character-based (like Sharma ji, Gupta aunty, etc.):
-   "Sharma ji ka beta hamesha kehta hai..."
+CONTENT: ${category === 'family' ? 
+  'Keep it clean and family-friendly' : 
+  'Include adult themes, mild profanity okay, relationship and work humor'}
 
-5. Situation comedy:
-   "Jab Indian family restaurant mein jaati hai..."
+FORMAT: Short conversation or story (2-4 lines max). Use \\n for line breaks.
 
-ENHANCED LANGUAGE MIXING RULES (USE MORE HINDI):
-- Use 70% Hindi and 30% English (heavily favor Hindi)
-- Hindi words to use frequently: kyunki, lekin, phir, kya, kaise, kahan, kab, kaun, kuch, sab, hamesha, kabhi, bilkul, bahut, etc.
-- Hindi expressions: "arre yaar", "hai na", "kya baat hai", "sach mein", "are bhai", "yaar", "boss", "dude"
-- Hindi grammar patterns: "kar raha hai", "ho gaya", "aa gaya", "ja raha hai", "dekh raha hai"
-- Use English only for: modern tech terms, office words, brand names
-- Hindi sentence structures: "Kya baat hai?", "Kaise ho?", "Kyun late?", "Accha hai na?"
-
-CONTENT THEMES for ${category}:
-${category === 'family' ? 
-  '- Family situations, school life, food, festivals, Bollywood, cricket, technology' :
-  '- Adult relationships, office politics, dating disasters, marriage comedy, drinking stories, mild profanity, sexual humor (tasteful), adult life struggles, mature social situations'
-}
-
-LANGUAGE GUIDELINES for ${category}:
-${category === 'family' ? 
-  '- Keep it completely clean and appropriate for all ages' :
-  '- You can use mild bad words like "damn", "hell", "crap", "shit" when appropriate\n- Include adult themes like relationships, intimacy (tastefully), drinking, adult responsibilities\n- Use mature humor about dating, marriage, work stress, adult life struggles\n- Keep it spicy but not vulgar or offensive'
-}
-
-Make it sound like authentic Hindi conversation with heavy Hindi usage. Return ONLY the joke text.`;
+Return ONLY the joke text with natural line breaks.`;
       } else {
-        prompt = `Generate a funny Indian ${category} joke in English. Be creative with the format:
+        prompt = `Generate a funny Indian ${category} joke in English.
 
-FORMAT OPTIONS (choose one randomly):
-1. Conversation between characters:
-   "Mom: 'Beta, why are you always on your phone?'
-   Son: 'I'm learning, Mom!'
-   Mom: 'Learning what?'
-   Son: 'How to avoid your calls!'"
+STYLE: Natural conversational English with Indian cultural context.
 
-2. Story format:
-   "An Indian student went to America for higher studies. On his first day..."
+TOPICS: ${category === 'family' ? 
+  'Family dynamics, education, food culture, festivals, technology, generational gaps' : 
+  'Adult relationships, workplace drama, dating life, marriage humor, drinking culture, mature social situations'}
 
-3. Question-Answer format:
-   "Why don't Indian parents trust GPS? Because..."
+CONTENT: ${category === 'family' ? 
+  'Keep it completely clean and appropriate for all ages' : 
+  'Include adult themes, mild profanity okay when it adds humor, relationship and work struggles'}
 
-4. Character-based scenarios:
-   "Every Indian mom thinks her cooking is..."
+FORMAT: Choose from conversation, story, question-answer, or observational humor (2-4 lines max).
 
-5. Observational humor:
-   "You know you're Indian when..."
+Examples:
+- "Mom: 'Beta, why always on phone?' Son: 'Learning!' Mom: 'What?' Son: 'How to avoid your calls!'"
+- "Indian student in America: First day, professor asks 'Any questions?' He raises hand: 'Sir, where is the canteen?'"
 
-CONTENT THEMES for ${category}:
-${category === 'family' ? 
-  '- Family dynamics, education, food culture, festivals, technology, generational gaps' :
-  '- Adult relationships, workplace drama, dating life, marriage humor, drinking culture, mature social situations, adult responsibilities, relationship struggles, sexual humor (tasteful)'
-}
-
-LANGUAGE GUIDELINES for ${category}:
-${category === 'family' ? 
-  '- Keep it completely clean and appropriate for all ages' :
-  '- You can use mild profanity like "damn", "hell", "crap", "shit" when it adds to the humor\n- Include adult themes like dating disasters, marriage problems, work stress, drinking stories\n- Use mature humor about relationships, intimacy (tastefully), adult life struggles\n- Keep it edgy and spicy but not offensive or vulgar'
-}
-
-Make it relatable to Indian culture and genuinely funny. Return ONLY the joke text.`;
+Return ONLY the joke text with natural line breaks.`;
       }
-      
+
       const response = await secureApiCall(API_ENDPOINTS.CHAT, {
         method: 'POST',
         body: JSON.stringify({
@@ -196,13 +135,13 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
       });
 
       const data = await response.json();
-      
+
       let aiJoke = data.content || '';
-      
+
       if (!aiJoke || aiJoke.length < 10) {
         throw new Error('Invalid joke response from API');
       }
-      
+
       // Clean the response
       aiJoke = aiJoke
         .replace(/^here'?s[^:]*:?\s*/i, '')
@@ -216,7 +155,7 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
         .replace(/\s*\n\s*/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
-      
+
       return aiJoke;
     } catch (error) {
       throw error;
@@ -225,16 +164,16 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
 
   const generateNewJoke = async () => {
     setIsLoading(true);
-    
+
     try {
       // First check if API is available
       const isApiHealthy = await checkApiHealth();
       if (!isApiHealthy) {
         throw new Error('API service is currently unavailable. Please try again later.');
       }
-      
+
       const aiJoke = await generateAIJoke(selectedCategory);
-      
+
       // Check for duplicates
       const isDuplicate = jokeHistory.some(historyJoke => {
         const normalizeJoke = (joke) => {
@@ -242,7 +181,7 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
         };
         return normalizeJoke(aiJoke) === normalizeJoke(historyJoke);
       });
-      
+
       if (isDuplicate) {
         // Try one more time for a different joke
         const retryJoke = await generateAIJoke(selectedCategory);
@@ -252,7 +191,7 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
           };
           return normalizeJoke(retryJoke) === normalizeJoke(historyJoke);
         });
-        
+
         if (!isRetryDuplicate) {
           setCurrentJoke(retryJoke);
           setJokeHistory(prev => [retryJoke, ...prev.slice(0, 5)]);
@@ -274,7 +213,7 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
     } catch (error) {
       // Show specific error messages based on the type of error
       let errorMessage = 'Unable to generate joke. Please try again.';
-      
+
       if (error.message.includes('Rate limit')) {
         errorMessage = 'Please wait a moment before requesting another joke.';
       } else if (error.message.includes('API service is currently unavailable')) {
@@ -282,7 +221,7 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
       } else if (error.message.includes('Network error')) {
         errorMessage = 'Please check your internet connection and try again.';
       }
-      
+
       setCurrentJoke(errorMessage);
     } finally {
       setIsLoading(false);
@@ -316,24 +255,24 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
 
       <div className="max-w-5xl mx-auto relative z-10">
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8 sm:mb-12"
         >
-          <motion.h1 
+          <motion.h1
             className="text-5xl sm:text-6xl lg:text-7xl font-black mb-4 sm:mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent leading-tight flex items-center justify-center"
           >
             <Laugh className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 mr-3 sm:mr-4" />
             {getText('jokesTitle', language)}
             <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 ml-3 sm:ml-4 text-yellow-400" />
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-lg sm:text-xl lg:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed font-light mb-6"
           >
             {getText('jokesSubtitle', language)}
           </motion.p>
-          
+
           {/* Language Selector */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -343,7 +282,7 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
           >
             <LanguageSelector />
           </motion.div>
-          
+
           {/* Language Preview */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -370,11 +309,10 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 onClick={() => setSelectedCategory('family')}
-                className={`p-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-                  selectedCategory === 'family'
+                className={`p-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${selectedCategory === 'family'
                     ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white ring-4 ring-green-400/50 shadow-lg shadow-green-500/25'
                     : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 border border-gray-600/30'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-center space-x-3">
                   <span className="text-2xl">👨‍👩‍👧‍👦</span>
@@ -386,11 +324,10 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
               </button>
               <button
                 onClick={() => setSelectedCategory('spicy')}
-                className={`p-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
-                  selectedCategory === 'spicy'
+                className={`p-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${selectedCategory === 'spicy'
                     ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white ring-4 ring-red-400/50 shadow-lg shadow-red-500/25'
                     : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 border border-gray-600/30'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-center space-x-3">
                   <span className="text-2xl">🌶️</span>
@@ -426,31 +363,27 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
                 {selectedCategory === 'family' ? 'Family Joke' : '18+ Joke'}
               </h3>
               <div className="flex items-center space-x-3">
-                <span className="text-sm text-gray-400 bg-gray-800/50 px-3 py-1 rounded-full">
-                  🇮🇳 Indian
-                </span>
+                
                 <span className="text-sm text-gray-400 bg-gray-800/50 px-3 py-1 rounded-full">
                   {selectedCategory === 'family' ? 'Clean' : 'Spicy'}
                 </span>
-                <span className={`text-xs px-2 py-1 rounded-full flex items-center space-x-1 ${
-                  apiStatus === 'online' ? 'bg-green-500/20 text-green-400' :
-                  apiStatus === 'offline' ? 'bg-red-500/20 text-red-400' :
-                  'bg-yellow-500/20 text-yellow-400'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full ${
-                    apiStatus === 'online' ? 'bg-green-400' :
-                    apiStatus === 'offline' ? 'bg-red-400' :
-                    'bg-yellow-400'
-                  }`}></div>
+                <span className={`text-xs px-2 py-1 rounded-full flex items-center space-x-1 ${apiStatus === 'online' ? 'bg-green-500/20 text-green-400' :
+                    apiStatus === 'offline' ? 'bg-red-500/20 text-red-400' :
+                      'bg-yellow-500/20 text-yellow-400'
+                  }`}>
+                  <div className={`w-2 h-2 rounded-full ${apiStatus === 'online' ? 'bg-green-400' :
+                      apiStatus === 'offline' ? 'bg-red-400' :
+                        'bg-yellow-400'
+                    }`}></div>
                   <span>
                     {apiStatus === 'online' ? 'Online' :
-                     apiStatus === 'offline' ? 'Offline' :
-                     'Checking...'}
+                      apiStatus === 'offline' ? 'Offline' :
+                        'Checking...'}
                   </span>
                 </span>
               </div>
             </div>
-            
+
             <div className="bg-gray-900/50 rounded-2xl p-6 sm:p-8 min-h-[200px] sm:min-h-[250px] flex items-center justify-center mb-6 border border-gray-700/30">
               <AnimatePresence mode="wait">
                 {isLoading ? (
@@ -487,19 +420,18 @@ Make it relatable to Indian culture and genuinely funny. Return ONLY the joke te
             <button
               onClick={generateNewJoke}
               disabled={isLoading || apiStatus === 'offline'}
-              className={`w-full px-8 py-4 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 flex items-center justify-center space-x-3 shadow-lg ${
-                apiStatus === 'offline' 
-                  ? 'bg-gray-600 cursor-not-allowed' 
+              className={`w-full px-8 py-4 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 flex items-center justify-center space-x-3 shadow-lg ${apiStatus === 'offline'
+                  ? 'bg-gray-600 cursor-not-allowed'
                   : isLoading
                     ? 'bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800'
                     : 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600'
-              }`}
+                }`}
             >
               <RefreshCw className={`w-6 h-6 ${isLoading ? 'animate-spin' : ''}`} />
-              {apiStatus === 'offline' 
-                ? 'Service Unavailable' 
-                : isLoading 
-                  ? getText('generating', language) 
+              {apiStatus === 'offline'
+                ? 'Service Unavailable'
+                : isLoading
+                  ? getText('generating', language)
                   : getText('generateJoke', language)
               }
             </button>

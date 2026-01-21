@@ -24,7 +24,15 @@ const MoodDetector = () => {
     setShowResult(false);
     
     try {
-      const basePrompt = `Analyze the mood and emotions in this text: "${inputText.trim()}". Provide a mood analysis with suggestions for activities.`;
+      const basePrompt = `Analyze the mood in this text and suggest a matching activity: "${inputText.trim()}"
+
+ANALYSIS: Identify the primary emotion and confidence level (0-1).
+
+SUGGESTION: Recommend one specific activity from: arcade games, brain puzzles, astrology reading, karaoke, jokes, or personality analysis.
+
+FORMAT: Return mood name, confidence score, activity suggestion, and brief explanation.
+
+Keep response concise and actionable.`;
       const languageAwarePrompt = getLanguagePrompt(basePrompt, 'mood');
       
       const response = await secureApiCall(API_ENDPOINTS.MOOD_DETECT, {

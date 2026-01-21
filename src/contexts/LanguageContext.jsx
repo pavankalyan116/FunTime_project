@@ -36,49 +36,24 @@ export const LanguageProvider = ({ children }) => {
 
   const getLanguagePrompt = (basePrompt, contentType = 'general') => {
     const languageInstructions = {
-      english: "Respond in pure English only. Do not mix any other languages.",
-      teglish: `Respond in Teglish (Telugu-English mix). This is MANDATORY - you MUST mix Telugu and English naturally like how Telugu people speak with friends. Examples: 
-      - "Arre bro, idi chala funny undi ra!"
-      - "Nuvvu cheppina joke super ga undi yaar!"
-      - "Baaga laugh chesanu, next joke cheppu!"
-      Use Telugu words like: arre, bro, ra, yaar, undi, chala, baaga, enti, enduku, nuvvu, nenu, etc. mixed with English.`,
-      higlish: `Respond in Higlish (Hindi-English mix). This is MANDATORY - you MUST mix Hindi and English naturally like how Hindi speakers talk with friends. Examples:
-      - "Yaar, yeh joke bahut funny hai!"
-      - "Kya baat hai bro, mast joke tha!"
-      - "Arre yaar, aur sunao jokes!"
-      Use Hindi words like: yaar, bhai, kya, hai, bahut, mast, arre, aur, sunao, etc. mixed with English.`
+      english: "Respond in pure English only.",
+      teglish: `Respond in Teglish (Telugu-English mix). Mix 65% Telugu with 35% English naturally.
+      Use Telugu words: arre, bro, ra, yaar, undi, chala, baaga, enti, enduku, nuvvu, nenu, etc.
+      Example: "Arre bro, idi chala funny undi ra!"`,
+      higlish: `Respond in Higlish (Hindi-English mix). Mix 65% Hindi with 35% English naturally.
+      Use Hindi words: yaar, bhai, kya, hai, bahut, mast, arre, aur, kyun, etc.
+      Example: "Yaar, yeh joke bahut funny hai!"`
     };
 
-    const specificInstructions = {
-      joke: {
-        english: "Generate a funny Indian joke in pure English only.",
-        teglish: `Generate a funny Indian joke in Teglish (Telugu-English mix). IMPORTANT: You MUST use Telugu words mixed with English. Example style: "Arre yaar, Indian parents enduku late ga call chestaru? Kyunki they want to disturb mana peaceful time ra!" Use words like: arre, yaar, enduku, chestaru, mana, ra, undi, chala, baaga, etc.`,
-        higlish: `Generate a funny Indian joke in Higlish (Hindi-English mix). IMPORTANT: You MUST use Hindi words mixed with English. Example style: "Yaar, Indian traffic mein kyun sab log expert drivers ban jaate hain? Kyunki everyone thinks ki main hi sabse accha driver hun!" Use words like: yaar, kyun, mein, sab, ban jaate hain, ki, main, hun, etc.`
-      },
-      roast: {
-        english: "Generate a roast in pure English only.",
-        teglish: "Generate a roast in Teglish (Telugu-English mix). Mix Telugu and English naturally like friends talking.",
-        higlish: "Generate a roast in Higlish (Hindi-English mix). Mix Hindi and English naturally like friends talking."
-      },
-      compliment: {
-        english: "Generate a compliment in pure English only.",
-        teglish: "Generate a compliment in Teglish (Telugu-English mix). Mix Telugu and English naturally.",
-        higlish: "Generate a compliment in Higlish (Hindi-English mix). Mix Hindi and English naturally."
-      },
-      astrology: {
-        english: "Provide astrological reading in pure English only.",
-        teglish: "Provide astrological reading in Teglish (Telugu-English mix). Mix Telugu and English naturally.",
-        higlish: "Provide astrological reading in Higlish (Hindi-English mix). Mix Hindi and English naturally."
-      }
-    };
+    if (language === 'english') {
+      return basePrompt;
+    }
 
-    const specificInstruction = specificInstructions[contentType]?.[language] || languageInstructions[language];
-    
     return `${basePrompt}
 
-CRITICAL LANGUAGE REQUIREMENT: ${specificInstruction}
+LANGUAGE: ${languageInstructions[language]}
 
-${language !== 'english' ? `MANDATORY: Your response MUST contain ${language === 'teglish' ? 'Telugu' : 'Hindi'} words mixed with English. Do NOT respond in pure English. This is a strict requirement.` : ''}`;
+MANDATORY: Must contain ${language === 'teglish' ? 'Telugu' : 'Hindi'} words mixed with English.`;
   };
 
   return (

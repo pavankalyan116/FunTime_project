@@ -13,6 +13,16 @@ const Navbar = () => {
     { name: 'Nature', hue: 100 },
     { name: 'Sunset', hue: 320 },
     { name: 'Toxic', hue: 280 },
+    { name: 'NeonBlue', hue: 180 },   // Electric blue
+    { name: 'Aurora', hue: 150 },     // Northern lights vibe
+    { name: 'Royal', hue: 220 },      // Deep blue / luxury
+    { name: 'Fire', hue: 20 },        // Flame orange / red
+    { name: 'Mint', hue: 120 },       // Soft mint green
+    { name: 'Cosmic', hue: 260 },     // Space purple / galaxy
+    { name: 'Rose', hue: 340 },       // Soft romantic pink
+    { name: 'Ice', hue: 200 },        // Frosty cyan / cool
+    { name: 'Gold', hue: 55 },        // Warm golden yellow
+    { name: 'Matrix', hue: 135 },
   ];
 
   useEffect(() => {
@@ -50,30 +60,29 @@ const Navbar = () => {
               FunTime
             </span>
           </Link>
-          
+
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex space-x-2">
-                {navItems.map((item) => {
+              {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
                 return (
-                    <Link
+                  <Link
                     key={item.name}
                     to={item.path}
-                    className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        isActive
+                    className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
                         ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-900/30 scale-105'
                         : 'text-gray-300 hover:bg-gray-700/50 hover:text-white hover:scale-105'
-                    }`}
-                    >
+                      }`}
+                  >
                     <Icon className="w-4 h-4 mr-2" />
                     {item.name}
                     {isActive && (
                       <div className="ml-2 w-1 h-1 bg-white rounded-full"></div>
                     )}
-                    </Link>
+                  </Link>
                 );
-                })}
+              })}
             </div>
 
             <button
@@ -87,14 +96,14 @@ const Navbar = () => {
             </button>
 
             <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full hover:bg-gray-800/50 text-gray-400 hover:text-white transition-all duration-200 hover:scale-110 border border-gray-700/50"
-                title={`Theme: ${themes[theme].name}`}
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-gray-800/50 text-gray-400 hover:text-white transition-all duration-200 hover:scale-110 border border-gray-700/50"
+              title={`Theme: ${themes[theme].name}`}
             >
-                <div className="relative">
-                  <Palette className="w-5 h-5" />
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                </div>
+              <div className="relative">
+                <Palette className="w-5 h-5" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              </div>
             </button>
           </div>
         </div>
@@ -113,11 +122,10 @@ const Navbar = () => {
                     key={item.name}
                     to={item.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                      isActive
+                    className={`flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
                         ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-900/30'
                         : 'text-gray-200 hover:bg-gray-800/60'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
                     {item.name}

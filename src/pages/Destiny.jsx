@@ -137,7 +137,18 @@ const FlamesGame = () => {
     // Generate AI dedication
     let dedication = "A match made in heaven!";
     try {
-        const basePrompt = `Write a short, romantic, or funny one-line dedication for a couple named ${name1} and ${name2} who got the result "${outcome}" in the FLAMES game. Max 20 words.`;
+        const basePrompt = `Write a short romantic dedication for ${name1} and ${name2} who got "${outcome}" in FLAMES.
+
+STYLE: ${outcome === 'Lovers' ? 'Romantic and sweet' : 
+         outcome === 'Friends' ? 'Warm and friendly' : 
+         outcome === 'Marriage' ? 'Celebratory and blessed' : 
+         outcome === 'Affection' ? 'Caring and tender' : 
+         outcome === 'Enemy' ? 'Playfully dramatic' : 
+         'Sibling-like and supportive'}
+
+FORMAT: One creative line, max 15 words.
+
+Return ONLY the dedication text.`;
         const languageAwarePrompt = getLanguagePrompt(basePrompt, 'dedication');
         
         const response = await fetch(`${API_URL}/api/chat`, {
@@ -374,77 +385,29 @@ const AstrologyReader = () => {
     const p2 = formatVedicData(data.name2, data.rashi2, data.nakshatra2, data.dob2, data.time2);
 
     const vedicPrompt = mode === 'single'
-      ? `As a learned Vedic astrologer and master of Jyotish Shastra, provide a mystical and detailed astrological reading for ${p1}. 
+      ? `As a Vedic astrologer, provide a mystical reading for ${p1}.
 
-      BE CREATIVE WITH FORMAT - Choose one approach:
-      1. NARRATIVE STYLE: "In the cosmic dance of planets, your soul's journey reveals..."
-      2. DIALOGUE STYLE: "The ancient rishis whisper: 'This soul carries the blessing of...'"
-      3. POETIC STYLE: "Like a lotus blooming in celestial waters, your destiny unfolds..."
-      4. PROPHETIC STYLE: "The stars have written your story across the cosmic canvas..."
-      5. CONVERSATIONAL STYLE: "Let me tell you what the planets revealed about your path..."
+STYLE: Choose one approach - narrative, dialogue, poetic, prophetic, or conversational.
 
-      Use authentic Vedic astrology concepts creatively:
-      - Rashi (Moon sign) characteristics and planetary influences
-      - Nakshatra qualities and the ruling deity's blessings
-      - Pancha Mahabhuta (five elements) influence
-      - Karma and Dharma insights from past lives
-      - Dasha periods and cosmic timing
-      - Sacred remedies and spiritual practices
+INCLUDE: Soul purpose, cosmic gifts, life challenges, career destiny, relationships, health, spiritual path, divine timing, sacred remedies.
 
-      CREATIVE SECTIONS TO INCLUDE:
-      • Soul Purpose: Your dharmic path in this lifetime
-      • Cosmic Gifts: Natural talents blessed by the planets
-      • Life Challenges: Karmic lessons to master
-      • Career Destiny: Professional path written in stars
-      • Love & Relationships: Heart's journey through cosmic connections
-      • Health & Vitality: Ayurvedic constitution and wellness
-      • Spiritual Evolution: Path to moksha and enlightenment
-      • Divine Timing: Favorable periods and cosmic windows
-      • Sacred Remedies: Mantras, gems, and rituals for harmony
+ELEMENTS: Use Sanskrit terms poetically, mystical imagery, ancient wisdom references.
 
-      CREATIVE ELEMENTS:
-      - Use Sanskrit terms poetically
-      - Include mystical imagery and metaphors
-      - Reference ancient wisdom and cosmic principles
-      - Make it personal and deeply meaningful
-      - Write 250-350 words with inspiring, mystical tone`
+FORMAT: 250-350 words with inspiring, mystical tone.
+
+Return ONLY the reading text.`
       
-      : `As a master of Vedic Jyotish and cosmic compatibility, analyze the soul connection between ${p1} and ${p2}.
+      : `As a Vedic astrologer, analyze the cosmic compatibility between ${p1} and ${p2}.
 
-      BE CREATIVE WITH FORMAT - Choose one approach:
-      1. COSMIC LOVE STORY: "In the tapestry of time, two souls were destined to meet..."
-      2. DIVINE DIALOGUE: "The cosmic forces speak of this union..."
-      3. MYSTICAL ANALYSIS: "Through the lens of ancient wisdom, this partnership reveals..."
-      4. PROPHETIC VISION: "The stars foretell a journey of two hearts..."
-      5. SACRED CONSULTATION: "Let the ancient rishis guide this sacred union..."
+STYLE: Choose one approach - cosmic love story, divine dialogue, mystical analysis, prophetic vision, or sacred consultation.
 
-      **Enhanced Ashtakoot Guna Milan with Creative Insights:**
-      1. Varna (spiritual harmony) - "Your souls dance in similar frequencies..."
-      2. Vashya (magnetic attraction) - "The cosmic pull between your energies..."
-      3. Tara (stellar blessings) - "Your birth stars sing in harmony..."
-      4. Yoni (intimate connection) - "The sacred union of complementary forces..."
-      5. Graha Maitri (planetary friendship) - "Your ruling planets embrace..."
-      6. Gana (temperamental balance) - "Your natures create perfect equilibrium..."
-      7. Bhakoot (love's flowering) - "Affection blooms like sacred lotus..."
-      8. Nadi (life force compatibility) - "Your pranas merge in cosmic rhythm..."
+INCLUDE: Ashtakoot analysis, cosmic chemistry, soul recognition, growth together, challenges, divine timing, sacred rituals, future vision.
 
-      CREATIVE COMPATIBILITY SECTIONS:
-      • Cosmic Chemistry: How your energies dance together
-      • Soul Recognition: Past life connections and karmic bonds
-      • Love Languages: How planets influence your affection
-      • Growth Together: Spiritual evolution as a couple
-      • Life Challenges: Obstacles that strengthen your bond
-      • Divine Timing: Best periods for major decisions
-      • Sacred Rituals: Ceremonies to enhance harmony
-      • Future Vision: Your destiny as cosmic partners
+ELEMENTS: Sanskrit wisdom, romantic mystical style, practical remedies.
 
-      MYSTICAL REMEDIES:
-      - Couple mantras for harmony ("Om Shri Radha Krishnaya Namaha")
-      - Gemstone combinations for love and understanding
-      - Sacred timing for marriage and important decisions
-      - Vedic rituals to strengthen the cosmic bond
+FORMAT: 300-450 words in mystical, romantic Vedic style.
 
-      Write 300-450 words in mystical, romantic Vedic style with Sanskrit wisdom.`;
+Return ONLY the compatibility analysis.`;
 
     const languageAwarePrompt = getLanguagePrompt(vedicPrompt, 'astrology');
 

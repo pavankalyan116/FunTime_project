@@ -40,7 +40,19 @@ const RoastMe = () => {
     updateStreak();
     
     try {
-      const basePrompt = `Generate a ${mode} for someone named ${name.trim()}${mood.trim() ? ` who is feeling ${mood.trim()}` : ''}. Make it creative, witty, and appropriate for the ${mode} style.`;
+      const basePrompt = `Generate a ${mode} for ${name.trim()}${mood.trim() ? ` who feels ${mood.trim()}` : ''}.
+
+STYLE: ${mode === 'roast' ? 'Witty, playful roasting with mild profanity okay' : 
+         mode === 'compliment' ? 'Genuine, uplifting compliments that boost confidence' : 
+         'Motivational, inspiring, action-oriented encouragement'}
+
+TONE: ${mode === 'roast' ? 'Humorous but not mean-spirited, clever wordplay' : 
+        mode === 'compliment' ? 'Warm, sincere, specific and personal' : 
+        'Energetic, empowering, goal-focused'}
+
+FORMAT: 2-3 sentences max, direct and impactful.
+
+Return ONLY the ${mode} text, no extra explanations.`;
       
       const languageAwarePrompt = getLanguagePrompt(basePrompt, mode);
       

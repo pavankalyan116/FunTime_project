@@ -67,23 +67,23 @@ const Brainlock = () => {
           body: JSON.stringify({
             messages: [{
               role: "user",
-              content: `Generate exactly ${questionCount} unique, ${difficulty}-level multiple-choice quiz questions about "${topic}".
+              content: `Generate exactly ${questionCount} unique ${difficulty}-level quiz questions about "${topic}".
 
-              CRITICAL: Return ONLY a valid JSON array with NO markdown formatting, NO backticks, NO extra text.
-              
-              Format: [{"question": "Clear question text?", "options": ["Option A", "Option B", "Option C", "Option D"], "correctAnswer": 0, "explanation": "Brief explanation"}]
-              
-              Requirements:
-              - Each question must be clear and unambiguous
-              - Options should be plausible but only one correct
-              - correctAnswer is the index (0-3) of the correct option
-              - Explanations should be concise (1-2 sentences)
-              - Difficulty: ${difficulty} (easy=basic facts, medium=requires thinking, hard=expert level)
-              - Make questions engaging and educational
-              
-              Topic: ${topic}
-              Count: ${questionCount}
-              Level: ${difficulty}`
+CRITICAL: Return ONLY valid JSON array, NO markdown, NO backticks, NO extra text.
+
+FORMAT: [{"question": "Clear question?", "options": ["A", "B", "C", "D"], "correctAnswer": 0, "explanation": "Brief explanation"}]
+
+REQUIREMENTS:
+- Questions must be clear and unambiguous
+- Options should be plausible, only one correct
+- correctAnswer is index (0-3) of correct option
+- Explanations: 1-2 sentences max
+- Difficulty: ${difficulty} (easy=basic facts, medium=thinking required, hard=expert level)
+- Make engaging and educational
+
+Topic: ${topic}
+Count: ${questionCount}
+Level: ${difficulty}`
             }],
             temperature: 0.8,
             top_p: 0.9
