@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>FunTime</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script type="text/javascript">
+    var pathSegmentsToKeep = 1;
+
+    var l = window.location;
+    l.replace(
+      l.protocol +
+      "//" +
+      l.hostname +
+      (l.port ? ":" + l.port : "") +
+      l.pathname
+        .split("/")
+        .slice(0, 1 + pathSegmentsToKeep)
+        .join("/") +
+      "/?" +
+      l.pathname
+        .slice(1)
+        .split("/")
+        .slice(pathSegmentsToKeep)
+        .join("/")
+        .replace(/&/g, "~and~") +
+      (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+      l.hash
+    );
+  </script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-W15DS682VJ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-W15DS682VJ');
+  </script>
+</head>
+
+<body></body>
+
+</html>
