@@ -7,14 +7,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/FunTime_project/favicon.svg" />
     <link rel="alternate icon" href="/FunTime_project/favicon.svg" />
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-W15DS682VJ"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { dataLayer.push(arguments); }
-      gtag('js', new Date());
-      gtag('config', 'G-W15DS682VJ');
-    </script>
+    
+    <!-- GitHub Pages SPA redirect handler - MUST run first, before any other scripts -->
     <script type="text/javascript">
       (function (l) {
         if (l.search && l.search[1] === "/") {
@@ -26,11 +20,28 @@
             })
             .join("?");
           
-          // For GitHub Pages with base path, we need to preserve the base path
+          // Remove the leading slash if present
+          if (decoded.startsWith('/')) {
+            decoded = decoded.slice(1);
+          }
+          
+          // For GitHub Pages with base path
           var basePath = "/FunTime_project";
-          window.history.replaceState(null, null, basePath + "/" + decoded + l.hash);
+          var newUrl = basePath + "/" + decoded + l.hash;
+          
+          // Immediately update the URL before React Router sees it
+          window.history.replaceState(null, null, newUrl);
         }
       })(window.location);
+    </script>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-W15DS682VJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-W15DS682VJ');
     </script>
     <script type="module" crossorigin src="/FunTime_project/assets/index-Ct222ndx.js"></script>
     <link rel="stylesheet" crossorigin href="/FunTime_project/assets/index-B5AF20Z_.css">
