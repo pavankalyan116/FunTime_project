@@ -25,7 +25,10 @@
               return s.replace(/~and~/g, "&");
             })
             .join("?");
-          window.history.replaceState(null, null, l.pathname + decoded + l.hash);
+          
+          // For GitHub Pages with base path, we need to preserve the base path
+          var basePath = "/FunTime_project";
+          window.history.replaceState(null, null, basePath + "/" + decoded + l.hash);
         }
       })(window.location);
     </script>

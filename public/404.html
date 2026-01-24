@@ -5,29 +5,27 @@
   <title>FunTime</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script type="text/javascript">
-    // GitHub Pages SPA redirect
+    // GitHub Pages SPA redirect for /FunTime_project/
     var pathSegmentsToKeep = 1;
 
     var l = window.location;
-    l.replace(
-      l.protocol +
-      "//" +
-      l.hostname +
-      (l.port ? ":" + l.port : "") +
-      l.pathname
-        .split("/")
-        .slice(0, 1 + pathSegmentsToKeep)
-        .join("/") +
-      "/?" +
-      l.pathname
-        .slice(1)
-        .split("/")
-        .slice(pathSegmentsToKeep)
-        .join("/")
-        .replace(/&/g, "~and~") +
-      (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
-      l.hash
-    );
+    var pathname = l.pathname;
+    
+    // Extract the route after /FunTime_project/
+    var segments = pathname.split('/').filter(Boolean);
+    var projectName = segments[0]; // 'FunTime_project'
+    var route = segments.slice(1).join('/'); // the actual route like 'jokes'
+    
+    if (route) {
+      // Redirect to index with the route as a query parameter
+      l.replace(
+        l.protocol + '//' + l.hostname + 
+        (l.port ? ':' + l.port : '') + 
+        '/' + projectName + '/?/' + route +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    }
   </script>
 </head>
 <body>
