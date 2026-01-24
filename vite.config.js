@@ -18,7 +18,9 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
-    assetsDir: "assets"
+    assetsDir: "assets",
+    // Ensure public files are copied
+    copyPublicDir: true
   },
   resolve: {
     alias: {
